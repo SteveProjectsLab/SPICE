@@ -1,0 +1,36 @@
+LTspice 24.1.5 for Windows
+Circuit: G:\Il mio Drive\00 UNIBS\MAGISTRALE\ANNO 2 - 2° semestre\ELETTRONICA DI POTENZA\Esercitazioni\Buck Converter\Buck Converter Ideale Guadagno vs. D.net
+Start Time: Fri Mar 21 10:54:56 2025
+solver = Normal
+Maximum thread count: 4
+tnom = 27
+temp = 27
+method = Gear
+Direct Newton iteration for .op point succeeded.
+.step x=0.1
+.step x=0.2
+.step x=0.3
+.step x=0.4
+.step x=0.5
+.step x=0.6
+.step x=0.7
+.step x=0.8
+.step x=0.9
+Total elapsed time: 4.260 seconds.
+
+Files loaded:
+G:\Il mio Drive\00 UNIBS\MAGISTRALE\ANNO 2 - 2° semestre\ELETTRONICA DI POTENZA\Esercitazioni\Buck Converter\Buck Converter Ideale Guadagno vs. D.net
+C:\Users\stefa\AppData\Local\LTspice\lib\cmp\standard.dio
+
+
+Measurement: Gain
+  step	AVG(V(Out)/V(In))	FROM	TO
+     1	0.178983375267	0.002	0.003
+     2	0.306904900645	0.002	0.003
+     3	0.412745934877	0.002	0.003
+     4	0.501090776772	0.002	0.003
+     5	0.574257296417	0.002	0.003
+     6	0.634795132654	0.002	0.003
+     7	0.714705316988	0.002	0.003
+     8	0.814300810911	0.002	0.003
+     9	0.913621160182	0.002	0.003

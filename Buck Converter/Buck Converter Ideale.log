@@ -1,0 +1,15 @@
+LTspice 24.1.5 for Windows
+Circuit: G:\Il mio Drive\00 UNIBS\MAGISTRALE\ANNO 2 - 2° semestre\ELETTRONICA DI POTENZA\Esercitazioni\Buck Converter\Buck Converter Ideale.net
+Start Time: Wed Mar 19 12:29:19 2025
+solver = Normal
+Maximum thread count: 4
+tnom = 27
+temp = 27
+method = modified trap
+Direct Newton iteration for .op point succeeded.
+Total elapsed time: 0.841 seconds.
+
+Files loaded:
+G:\Il mio Drive\00 UNIBS\MAGISTRALE\ANNO 2 - 2° semestre\ELETTRONICA DI POTENZA\Esercitazioni\Buck Converter\Buck Converter Ideale.net
+C:\Users\stefa\AppData\Local\LTspice\lib\cmp\standard.dio
+
