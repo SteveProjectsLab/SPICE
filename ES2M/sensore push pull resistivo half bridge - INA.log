@@ -1,0 +1,15 @@
+LTspice 24.1.5 for Windows
+Circuit: C:\Users\stefa\OneDrive\Documenti\GitHub\SPICE\ES2M\sensore push pull resistivo half bridge - INA.net
+Start Time: Fri Jun 20 12:01:26 2025
+solver = Normal
+Maximum thread count: 4
+tnom = 27
+temp = 27
+method = Gear
+Direct Newton iteration for .op point succeeded.
+Total elapsed time: 0.077 seconds.
+
+Files loaded:
+C:\Users\stefa\OneDrive\Documenti\GitHub\SPICE\ES2M\sensore push pull resistivo half bridge - INA.net
+C:\Users\stefa\AppData\Local\LTspice\lib\sub\UniversalOpAmp1.lib
+
