@@ -1,0 +1,2678 @@
+* INFINEON Power Transistors                                    *
+* Cadence PSPICE Library                                        *
+*                                                               *
+*                                                               *
+* Version 151025                                                *
+*                                                               *
+*****************************************************************
+*                                                               *
+* The Simulation Model is subject to change without notice. In  *
+* addition, models can be a useful tool in evaluating device    *
+* performance, they cannot reflect the accurate device          *
+* performance under all conditions, nor are they intended to    *
+* replace bread boarding for final verification. Infineon       *
+* therefore does not assume any warranty or liability           *
+* whatsoever arising from their use. Infineon does not assume   *
+* any warranty or liability for the values and functions of the *
+* Simulation Model.                                             *
+* The methods and results of the Simulation Model are to the    *
+* best of our knowledge                                         *
+* correct. However, the user is fully responsible to verify and *
+* validate these results under the operating conditions and in  *
+* the environment of its application. Infineon will not bear    *
+* the responsibility arising out of or in connection with any   *
+* malfunction of the Simulation Models.                         *
+* Models provided by Infineon are not warranted by Infineon as  *
+* completely and comprehensively representing all the           *
+* specifications and operating characteristics of the           *
+* semiconductor products to which these models relate. The      *
+* models describe the characteristics of typical devices. In    *
+* all cases, the current data sheet information for a given     *
+* device is the conclusive design guideline and the only actual *
+* performance specification.                                    *
+*                                                               *
+*                                                               *
+* This library contains electrical models of the following      *
+* Infineon transistors:                                         *
+*                                                               *
+*   IPB014N08NM6        IPF011N08NM6        IPP014N08NM6        *
+*   IPT009N08NM6        IQE031N08LM6CG      IQE031N08LM6CGSC    *
+*   IQE036N08NM6        IQE036N08NM6CG      IQE036N08NM6CGSC    *
+*   IQE036N08NM6SC      ISC014N08NM6        ISC018N08NM6        *
+*   ISC018N08NM6SC      ISC031N08NM6        ISC031N08NM6SC      *
+*   ISC056N08NM6        ISC088N08NM6        ISC151N08NM6        *
+*   ISZ053N08NM6        ISZ157N08NM6                            *
+*                                                               *
+*****************************************************************
+* thermal nodes of level 3 models:                              *
+*                                                               *
+*  .SUBCKT ISC014N08NM6 drain gate source Tj Tcase              *
+*  Tj :    potential=temperature (in °C) at junction (typically *
+*          not connected)                                       *
+*  Tcase : node where the boundary condition - external heat    *
+*          sinks etc - have to be connected (ideal heat sink    *
+*          can be modeled by using a voltage source stating the *
+*          ambient temperature in °C between Tcase and ground.  *
+*                                                               *
+*****************************************************************
+
+
+.SUBCKT S8_80_i1_var dd g s0 sp Tj PARAMS: a=1 Rsp=1 dVth=0 dR=0 dgfs=0 Inn=1
++Unn=1 Rmax=1 gmin=1 Rs=1m Rp=1 dC=0 Rm=1u
+
+.PARAM b0=30          p0=9           p1=-29.53m     p2=45.55u      mubet=1        fbet=0
+.PARAM Vth0=4.55      c=1.2          Fm=200m        Fn=500m        al=500m        auth=3.5m
+.PARAM dvx=550m       dvgs=400m      eta=140m       auth_sub=2.5m
+
+.PARAM Rd=7m          nmu=3.7        Rf=300m
+
+.PARAM lnIsj=-26.5    ndi=1.08       Rdi=1.97m      nmu2=0         n_Isj=2.5      UB=86
+.PARAM ab=45m         ab2=0          UT=100m        lB=-23         td=5n          ta=5n
+
+.PARAM kbq=85.8u      Tref=298       T0=273
+
+.PARAM f3=355p        f3b=55p        f3a=22p
+
+.PARAM ps1=11p        ps2=-4         ps3=67p        ps4=-80m       ps5=0.9p       ps6=25p
+.PARAM ps7=1.6        pc0=52p
+
+.PARAM qs6=6.33p      qs7=102.51p    qs8=-43.34m
+
+.PARAM q80=140.27p    q81=82.45p     q82=3.05p      q85=0          qs1=66p        qs2=150p
+.PARAM qs3=-51.59m    f2r=437.2m
+
+.PARAM x1={(q80-q81)/q82}       x2={q80/q82}
+.PARAM Vmin=3.95      Vmax=5.05      dCmax=330m
+.PARAM Vth={Vth0+(Vmax-Vth0)*limit(dVth,0,1)-(Vmin-Vth0)*limit(dVth,-1,0)}
+.PARAM q0={b0*((1-fbet)*(T0/Tref)**mubet+fbet)*a}
+.PARAM q1={tanh((Unn-Inn*Rs-Vth0)*eta)/eta*q0}
+.PARAM q2={(Fm*SQRT(0.4)-c)*Inn*q0}
+.PARAM Rlim={(q1+2*q2*Rmax-SQRT(q1**2+4*q2))/(2*q2)}
+.PARAM dRd={Rd/a+if(dVth==0,limit(dR,0,1)*max(Rlim-Rd/a-Rs-Rp,0),0)}
+.PARAM bm={c/((1/gmin-Rs)**2*Inn*a*((1-fbet)*(T0/Tref)**mubet+fbet))}
+.PARAM bet={b0+(b0-bm)*if(dR==0,if(dVth==0,limit(dgfs,-1,0),0),0)}
+.PARAM dC1={1+dCmax*limit(dC,0,1)}
+.PARAM dC2={1+dCmax*limit(dC,0,1)}
+
+.PARAM Cgs0={(f3*a+sqrt(a)*f3b)*dC1}
+.PARAM Cgs1={f3a*a*dC1}
+
+.PARAM Cds1={qs6*a*dC1}
+.PARAM Cds2={qs7*a*dC1}
+.PARAM Cds5={qs1*a*dC1}
+.PARAM Cds6={(a*qs2*(1+f2r/sqrt(a)))*dC1}
+.PARAM Cds8={q80*a*dC1}
+
+.PARAM Cdg1={(ps1*a+pc0*sqrt(a))*dC2}
+.PARAM Cdg2={ps3*a*dC2}
+.PARAM Cdg3={(ps5*a+ps6)*dC2}
+.PARAM dRdi={Rdi/a}
+
+.FUNC Ue(g,y,w)  {(g-Vth+auth*(w-Tref)+Fm*y**Fn)}
+.FUNC Ue1(g,y,w) {Ue(g,y,w)+(1+limit(Ue(g,y,w)+dvx,0,1)**2*(2*limit(Ue(g,y,w)+dvx,0,1)-3))*(dvgs+(auth_sub-auth)*(w-Tref))}
+
+.FUNC Ia(Uee,p,pp,z1) {if(Uee>pp,(Uee-c*z1)*z1,p*(pp-p)/c*exp((Uee-pp)/p))}
+.FUNC Ih(Uds,T,p,Uee) {bet*((1-fbet)*(T0/T)**mubet+fbet)*Ia(Uee,p,min(2*p,p+c*Uds),min(Uds,Uee/(2*c)))}
+.FUNC Jh(d,g,w,y,s,x) 
++{a*((Ih(s*y+min(d,0),w,(p0+(p1+p2*w)*w)*kbq*w,tanh(eta*Ue1(g,y,w))/eta)+exp(min(lB+(d-UB-ab*(w-Tref))/UT,24))))}
+
+.FUNC Idiode(Usd,Tj,Iss) {exp(min(log(Iss)+Usd/(ndi*kbq*Tj),7))-Iss}
+.FUNC Idiod(Usd,Tj)      {a*Idiode(Usd,Tj,exp(min(lnIsj+(Tj/Tref-1)*1.12/(ndi*kbq*Tj),7))*(Tj/Tref)**n_Isj)}
+
+.FUNC Pr(Vss0,Vssp)  {Vss0*Vss0/Rm+Vssp*Vssp/Rsp}
+.FUNC Q01(Uds) {a*(limit(Uds,x1,x2)*(q80-q82/2*limit(Uds,x1,x2))+min(Uds-x1,0)*q81-max(x1,0)*(q80-q81)/2)}
+
+C_Cgs  g      s      {Cgs0}
+C_Cgs1 g      sp     {Cgs1}
+
+C_Cds1 d      s      {Cds1}
+E_Eds2 d      edep2  VALUE {V(d,s)-I(V_sense3)/Cds2}
+C_Cds2 edep2  s      {Cds2}
+
+C_Cds5 d      sp     {Cds5}
+E_Eds6 d      edep6  VALUE {if(qs3==0,0,V(d,sp)-(exp(qs3*max(V(d,sp),0))-1)/min(qs3,-1u)-min(V(d,sp),0))}
+C_Cds6 edep6  sp     {Cds6}
+E_Eds8 d      edep8  VALUE {V(d,sp)-Q01(V(d,sp))/Cds8}
+C_Cds8 edep8  sp     {Cds8}
+
+E_Edg1 d    ox1 VALUE {if(ps2==0,0,V(d,g)-(exp(ps2*max(V(d,g),0))-1)/min(ps2,-1u)-min(V(d,g),0))}
+C_Cdg1 ox1  g   {Cdg1}
+E_Edg2 d    ox2 VALUE =
++{if(ps4==0,0,V(d,g)-((exp(ps4*(max(V(d,g)+ps7,0)))-exp(ps4*max(ps7,0)))/min(ps4,-1u)+min(V(d,g)+max(ps7,0),max(0,-ps7))))}
+C_Cdg2 ox2  g   {Cdg2}
+C_Cdg3 d    g   {Cdg3}
+
+Rfp     s sp    {Rsp}
+
+G_chan   d5a   s  VALUE={Jh(V(d5a,s),V(g,s),T0+limit(V(Tj),-200,300),(SQRT(1+4*al*max(V(d5a,s),0))-1)/2/al,sgn(V(d5a,s)),0)}
+Rd06     d5a  d5  1u
+V_sm     d    d5  0
+G_RMos   d1    d  VALUE={V(d1,d)/(Rf*dRd+(1-Rf)*dRd*((limit(V(Tj),-200,999)+T0)/Tref)**nmu)}
+
+V_sense  dd   d1  0
+G_diode   s   d3  VALUE={Idiod(V(s,d3),T0+limit(V(Tj),-200,499))}
+G_Rdio   d2   d1  VALUE={V(d2,d1)/(dRdi*((limit(V(Tj),-200,999)+T0)/Tref)**nmu2)}
+V_sense2 d2   d3  0
+
+
+L_L001 a c {td/(ta+td)}
+R_R001 a b {1/ta}
+V_sense3 c 0 0
+E_E001 b 0 VALUE {I(V_sense2)}
+E_E002 e 0 VALUE {Cds2*((exp(qs8*max(V(d,s),-1))-1)/min(qs8,-1u)+min(V(d,s)+1,0)*exp(-qs8))}
+R_R002 e c 1
+R_R003 a 0 500Meg
+
+R1        g    s  1G
+Rd01      d    s  500Meg
+Rd02     d2    s  500Meg
+Rd03     d1    d  1k
+Rd07     d3    s  1G
+Rssp      g   sp  100Meg
+
+Rmet      s    s0 {Rm}
+
+
+G_TH      0   Tj  VALUE =
++{(I(V_sense)-I(V_sense2))*V(d1,d)+I(V_sm)*V(d,s)+I(V_sense2)*V(d1,s)+Pr(V(s,s0),V(s,sp))}
+
+
+.ENDS
+
+**********
+
+.SUBCKT S8_80_i_var dd g s0 sp Tj PARAMS: a=1 Rsp=1 dVth=0 dR=0 dgfs=0 Inn=1
++Unn=1 Rmax=1 gmin=1 Rs=1 Rp=1 dC=0 Rm=1u
+
+.PARAM b0=30          p0=9           p1=-29.53m     p2=45.55u      mubet=1        fbet=0
+.PARAM Vth0=4.55      c=1.2          Fm=200m        Fn=500m        al=500m        auth=3.5m
+.PARAM dvx=550m       dvgs=400m      eta=140m       auth_sub=2.5m
+
+.PARAM Rd=7m          nmu=3.7        Rf=300m
+
+.PARAM lnIsj=-26.5    ndi=1.08       Rdi=1.97m      nmu2=0         n_Isj=2.5      UB=86
+.PARAM ab=45m         ab2=0          UT=100m        lB=-23         ta=5n
+
+.PARAM kbq=85.8u      Tref=298       T0=273
+
+.PARAM f3=355p        f3b=55p        f3a=22p
+
+.PARAM ps1=11p        ps2=-4         ps3=67p        ps4=-85m       ps5=0.9p       ps6=5p
+.PARAM ps7=1.6        pc0=52p
+
+.PARAM qs6=6.33p      qs7=102.51p    qs8=-43.34m
+
+.PARAM q80=140.27p    q81=82.45p     q82=3.05p      q85=0          qs1=66p        qs2=150p
+.PARAM qs3=-51.59m    f2r=437.2m
+
+.PARAM x1={(q80-q81)/q82}       x2={q80/q82}
+.PARAM Vmin=3.95      Vmax=5.05      dCmax=330m
+.PARAM Vth={Vth0+(Vmax-Vth0)*limit(dVth,0,1)-(Vmin-Vth0)*limit(dVth,-1,0)}
+.PARAM q0={b0*((1-fbet)*(T0/Tref)**mubet+fbet)*a}
+.PARAM q1={tanh((Unn-Inn*Rs-Vth0)*eta)/eta*q0}
+.PARAM q2={(Fm*SQRT(0.4)-c)*Inn*q0}
+.PARAM Rlim={(q1+2*q2*Rmax-SQRT(q1**2+4*q2))/(2*q2)}
+.PARAM dRd={Rd/a+if(dVth==0,limit(dR,0,1)*max(Rlim-Rd/a-Rs-Rp,0),0)}
+.PARAM bm={c/((1/gmin-Rs)**2*Inn*a*((1-fbet)*(T0/Tref)**mubet+fbet))}
+.PARAM bet={b0+(b0-bm)*if(dR==0,if(dVth==0,limit(dgfs,-1,0),0),0)}
+.PARAM dC1={1+dCmax*limit(dC,0,1)}
+.PARAM dC2={1+dCmax*limit(dC,0,1)}
+
+.PARAM Cgs0={(f3*a+sqrt(a)*f3b)*dC1}
+.PARAM Cgs1={f3a*a*dC1}
+
+.PARAM Cds1={qs6*a*dC1}
+.PARAM Cds2={qs7*a*dC1}
+.PARAM Cds5={qs1*a*dC1}
+.PARAM Cds6={(a*qs2*(1+f2r/sqrt(a)))*dC1}
+.PARAM Cds8={q80*a*dC1}
+
+.PARAM Cdg1={(ps1*a+pc0*sqrt(a))*dC2}
+.PARAM Cdg2={ps3*a*dC2}
+.PARAM Cdg3={(ps5*a+ps6)*dC2}
+.PARAM dRdi={Rdi/a}
+
+.FUNC Ue(g,y,w)  {(g-Vth+auth*(w-Tref)+Fm*y**Fn)}
+.FUNC Ue1(g,y,w) {Ue(g,y,w)+(1+limit(Ue(g,y,w)+dvx,0,1)**2*(2*limit(Ue(g,y,w)+dvx,0,1)-3))*(dvgs+(auth_sub-auth)*(w-Tref))}
+
+.FUNC Ia(Uee,p,pp,z1) {if(Uee>pp,(Uee-c*z1)*z1,p*(pp-p)/c*exp((Uee-pp)/p))}
+.FUNC Ih(Uds,T,p,Uee) {bet*((1-fbet)*(T0/T)**mubet+fbet)*Ia(Uee,p,min(2*p,p+c*Uds),min(Uds,Uee/(2*c)))}
+.FUNC Jh(d,g,w,y,s,x) 
++{a*((Ih(s*y+min(d,0),w,(p0+(p1+p2*w)*w)*kbq*w,tanh(eta*Ue1(g,y,w))/eta)+exp(min(lB+(d-UB-ab*(w-Tref))/UT,24))))}
+
+.FUNC Idiode(Usd,Tj,Iss) {exp(min(log(Iss)+Usd/(ndi*kbq*Tj),7))-Iss}
+.FUNC Idiod(Usd,Tj)      {a*Idiode(Usd,Tj,exp(min(lnIsj+(Tj/Tref-1)*1.12/(ndi*kbq*Tj),7))*(Tj/Tref)**n_Isj)}
+
+.FUNC Pr(Vss0,Vssp)  {Vss0*Vss0/Rm+Vssp*Vssp/Rsp}
+.FUNC Q01(Uds) {a*(limit(Uds,x1,x2)*(q80-q82/2*limit(Uds,x1,x2))+min(Uds-x1,0)*q81-max(x1,0)*(q80-q81)/2)}
+
+C_Cgs  g      s      {Cgs0}
+C_Cgs1 g      sp     {Cgs1}
+
+C_Cds1 d      s      {Cds1}
+E_Eds2 d      edep2  VALUE {if(qs8==0,0,V(d,s)-(exp(qs8*max(V(d,s),-1))-1)/min(qs8,-1u)+min(V(d,s)+1,0)*exp(-qs8))}
+C_Cds2 edep2  s      {Cds2}
+
+C_Cds5 d      sp     {Cds5}
+E_Eds6 d      edep6  VALUE {if(qs3==0,0,V(d,sp)-(exp(qs3*max(V(d,sp),0))-1)/min(qs3,-1u)-min(V(d,sp),0))}
+C_Cds6 edep6  sp     {Cds6}
+E_Eds8 d      edep8  VALUE {V(d,sp)-Q01(V(d,sp))/Cds8}
+C_Cds8 edep8  sp     {Cds8}
+
+E_Edg1 d    ox1 VALUE {if(ps2==0,0,V(d,g)-(exp(ps2*max(V(d,g),0))-1)/min(ps2,-1u)-min(V(d,g),0))}
+C_Cdg1 ox1  g   {Cdg1}
+E_Edg2 d    ox2 VALUE =
++{if(ps4==0,0,V(d,g)-((exp(ps4*(max(V(d,g)+ps7,0)))-exp(ps4*max(ps7,0)))/min(ps4,-1u)+min(V(d,g)+max(ps7,0),max(0,-ps7))))}
+C_Cdg2 ox2  g   {Cdg2}
+C_Cdg3 d    g   {Cdg3}
+
+Rfp     s sp    {Rsp}
+
+G_chan   d5a   s  VALUE={Jh(V(d5a,s),V(g,s),T0+limit(V(Tj),-200,300),(SQRT(1+4*al*max(V(d5a,s),0))-1)/2/al,sgn(V(d5a,s)),0)}
+Rd06     d5a  d5  1u
+V_sm     d    d5  0
+G_RMos   d1    d  VALUE={V(d1,d)/(Rf*dRd+(1-Rf)*dRd*((limit(V(Tj),-200,999)+T0)/Tref)**nmu)}
+V_sense  dd   d1  0
+G_Rdio   d2   d1  VALUE={V(d2,d1)/(dRdi*((limit(V(Tj),-200,999)+T0)/Tref)**nmu2)}
+V_sense2 d2   d3  0
+
+Dbody s d3 dbody
+.model dbody D (BV= {UB*10},CJO ={Cds2/1000},TT ={ta},IS ={a*exp(lnIsj)} m={0.3} RS={dRdi*1m} n={ndi})
+
+
+R1        g    s  1G
+Rd01      d    s  500Meg
+Rd02     d2    s  500Meg
+Rd03     d1    d  1k
+Rd07     d3    s  1G
+Rssp      g   sp  100Meg
+
+Rmet      s    s0 {Rm}
+
+
+G_TH      0   Tj  VALUE =
++{(I(V_sense)-I(V_sense2))*V(d1,d)+I(V_sm)*V(d,s)+I(V_sense2)*V(d1,s)+Pr(V(s,s0),V(s,sp))}
+
+
+.ENDS
+
+**********
+
+.SUBCKT S8_80_j_var dd g s0 sp Tj PARAMS: a=1 Rsp=1 dVth=0 dR=0 dgfs=0 Inn=1
++Unn=1 Rmax=1 gmin=1 Rs=1m Rp=1 dC=0 Rm=1u
+
+.PARAM b0=30          p0=9           p1=-29.53m     p2=45.55u      mubet=1        fbet=0
+.PARAM Vth0=4.55      c=1.2          Fm=200m        Fn=500m        al=500m        auth=3.5m
+.PARAM dvx=550m       dvgs=400m      eta=140m       auth_sub=2.5m
+
+.PARAM Rd=7.8m        nmu=3.7        Rf=300m
+
+.PARAM lnIsj=-26.5    ndi=1.08       Rdi=1.97m      nmu2=0         n_Isj=2.5      UB=86
+.PARAM ab=45m         ab2=0          UT=100m        lB=-23         td=5n          ta=5n
+
+.PARAM kbq=85.8u      Tref=298       T0=273
+
+.PARAM f3=355p        f3b=55p        f3a=22p
+
+.PARAM ps1=11p        ps2=-4         ps3=67p        ps4=-85m       ps5=0.9p       ps6=5p
+.PARAM ps7=1.6        pc0=52p
+
+.PARAM qs6=6.33p      qs7=102.51p    qs8=-43.34m
+
+.PARAM q80=140.27p    q81=82.45p     q82=3.05p      q85=0          qs1=66p        qs2=150p
+.PARAM qs3=-51.59m    f2r=437.2m
+
+.PARAM x1={(q80-q81)/q82}       x2={q80/q82}
+.PARAM Vmin=3.95      Vmax=5.05      dCmax=330m
+.PARAM Vth={Vth0+(Vmax-Vth0)*limit(dVth,0,1)-(Vmin-Vth0)*limit(dVth,-1,0)}
+.PARAM q0={b0*((1-fbet)*(T0/Tref)**mubet+fbet)*a}
+.PARAM q1={tanh((Unn-Inn*Rs-Vth0)*eta)/eta*q0}
+.PARAM q2={(Fm*SQRT(0.4)-c)*Inn*q0}
+.PARAM Rlim={(q1+2*q2*Rmax-SQRT(q1**2+4*q2))/(2*q2)}
+.PARAM dRd={Rd/a+if(dVth==0,limit(dR,0,1)*max(Rlim-Rd/a-Rs-Rp,0),0)}
+.PARAM bm={c/((1/gmin-Rs)**2*Inn*a*((1-fbet)*(T0/Tref)**mubet+fbet))}
+.PARAM bet={b0+(b0-bm)*if(dR==0,if(dVth==0,limit(dgfs,-1,0),0),0)}
+.PARAM dC1={1+dCmax*limit(dC,0,1)}
+.PARAM dC2={1+dCmax*limit(dC,0,1)}
+
+.PARAM Cgs0={(f3*a+sqrt(a)*f3b)*dC1}
+.PARAM Cgs1={f3a*a*dC1}
+
+.PARAM Cds1={qs6*a*dC1}
+.PARAM Cds2={qs7*a*dC1}
+.PARAM Cds5={qs1*a*dC1}
+.PARAM Cds6={(a*qs2*(1+f2r/sqrt(a)))*dC1}
+.PARAM Cds8={q80*a*dC1}
+
+.PARAM Cdg1={(ps1*a+pc0*sqrt(a))*dC2}
+.PARAM Cdg2={ps3*a*dC2}
+.PARAM Cdg3={(ps5*a+ps6)*dC2}
+.PARAM dRdi={Rdi/a}
+
+.FUNC Ue(g,y,w)  {(g-Vth+auth*(w-Tref)+Fm*y**Fn)}
+.FUNC Ue1(g,y,w) {Ue(g,y,w)+(1+limit(Ue(g,y,w)+dvx,0,1)**2*(2*limit(Ue(g,y,w)+dvx,0,1)-3))*(dvgs+(auth_sub-auth)*(w-Tref))}
+
+.FUNC Ia(Uee,p,pp,z1) {if(Uee>pp,(Uee-c*z1)*z1,p*(pp-p)/c*exp((Uee-pp)/p))}
+.FUNC Ih(Uds,T,p,Uee) {bet*((1-fbet)*(T0/T)**mubet+fbet)*Ia(Uee,p,min(2*p,p+c*Uds),min(Uds,Uee/(2*c)))}
+.FUNC Jh(d,g,w,y,s,x) 
++{a*((Ih(s*y+min(d,0),w,(p0+(p1+p2*w)*w)*kbq*w,tanh(eta*Ue1(g,y,w))/eta)+exp(min(lB+(d-UB-ab*(w-Tref))/UT,24))))}
+
+.FUNC Idiode(Usd,Tj,Iss) {exp(min(log(Iss)+Usd/(ndi*kbq*Tj),7))-Iss}
+.FUNC Idiod(Usd,Tj)      {a*Idiode(Usd,Tj,exp(min(lnIsj+(Tj/Tref-1)*1.12/(ndi*kbq*Tj),7))*(Tj/Tref)**n_Isj)}
+
+.FUNC Pr(Vss0,Vssp)  {Vss0*Vss0/Rm+Vssp*Vssp/Rsp}
+.FUNC Q01(Uds) {a*(limit(Uds,x1,x2)*(q80-q82/2*limit(Uds,x1,x2))+min(Uds-x1,0)*q81-max(x1,0)*(q80-q81)/2)}
+
+C_Cgs  g      s      {Cgs0}
+C_Cgs1 g      sp     {Cgs1}
+
+C_Cds1 d      s      {Cds1}
+E_Eds2 d      edep2  VALUE {V(d,s)-I(V_sense3)/Cds2}
+C_Cds2 edep2  s      {Cds2}
+
+C_Cds5 d      sp     {Cds5}
+E_Eds6 d      edep6  VALUE {if(qs3==0,0,V(d,sp)-(exp(qs3*max(V(d,sp),0))-1)/min(qs3,-1u)-min(V(d,sp),0))}
+C_Cds6 edep6  sp     {Cds6}
+E_Eds8 d      edep8  VALUE {V(d,sp)-Q01(V(d,sp))/Cds8}
+C_Cds8 edep8  sp     {Cds8}
+
+E_Edg1 d    ox1 VALUE {if(ps2==0,0,V(d,g)-(exp(ps2*max(V(d,g),0))-1)/min(ps2,-1u)-min(V(d,g),0))}
+C_Cdg1 ox1  g   {Cdg1}
+E_Edg2 d    ox2 VALUE =
++{if(ps4==0,0,V(d,g)-((exp(ps4*(max(V(d,g)+ps7,0)))-exp(ps4*max(ps7,0)))/min(ps4,-1u)+min(V(d,g)+max(ps7,0),max(0,-ps7))))}
+C_Cdg2 ox2  g   {Cdg2}
+C_Cdg3 d    g   {Cdg3}
+
+Rfp     s sp    {Rsp}
+
+G_chan   d5a   s  VALUE={Jh(V(d5a,s),V(g,s),T0+limit(V(Tj),-200,300),(SQRT(1+4*al*max(V(d5a,s),0))-1)/2/al,sgn(V(d5a,s)),0)}
+Rd06     d5a  d5  1u
+V_sm     d    d5  0
+G_RMos   d1    d  VALUE={V(d1,d)/(Rf*dRd+(1-Rf)*dRd*((limit(V(Tj),-200,999)+T0)/Tref)**nmu)}
+
+V_sense  dd   d1  0
+G_diode   s   d3  VALUE={Idiod(V(s,d3),T0+limit(V(Tj),-200,499))}
+G_Rdio   d2   d1  VALUE={V(d2,d1)/(dRdi*((limit(V(Tj),-200,999)+T0)/Tref)**nmu2)}
+V_sense2 d2   d3  0
+
+
+L_L001 a c {td/(ta+td)}
+R_R001 a b {1/ta}
+V_sense3 c 0 0
+E_E001 b 0 VALUE {I(V_sense2)}
+E_E002 e 0 VALUE {Cds2*((exp(qs8*max(V(d,s),-1))-1)/min(qs8,-1u)+min(V(d,s)+1,0)*exp(-qs8))}
+R_R002 e c 1
+R_R003 a 0 500Meg
+
+R1        g    s  1G
+Rd01      d    s  500Meg
+Rd02     d2    s  500Meg
+Rd03     d1    d  1k
+Rd07     d3    s  1G
+Rssp      g   sp  100Meg
+
+Rmet      s    s0 {Rm}
+
+
+G_TH      0   Tj  VALUE =
++{(I(V_sense)-I(V_sense2))*V(d1,d)+I(V_sm)*V(d,s)+I(V_sense2)*V(d1,s)+Pr(V(s,s0),V(s,sp))}
+
+
+.ENDS
+
+**********
+
+
+.SUBCKT S8_80_k_var dd g s0 sp Tj PARAMS: a=1 Rsp=1 dVth=0 dR=0 dgfs=0 Inn=1
++Unn=1 Rmax=1 gmin=1 Rs=1m Rp=1 dC=0 Rm=1u
+
+.PARAM b0=135         p0=5.4         p1=-16m        p2=26.53u      mubet=1.3      fbet=0
+.PARAM Vth0=2.66      c=1.1          Fm=200m        Fn=500m        al=500m        auth=2.6m
+.PARAM dvx=550m       dvgs=50m       eta=200m       auth_sub=1.6m
+
+.PARAM Rd=11.9m       nmu=3.05       Rf=350m
+
+.PARAM lnIsj=-26.5    ndi=1.08       Rdi=1.97m      nmu2=0         n_Isj=2.5      UB=86
+.PARAM ab=45m         ab2=0          UT=100m        lB=-23         td=5n          ta=5n
+
+.PARAM kbq=85.8u      Tref=298       T0=273
+
+.PARAM f3=640p        f3b=40p        f3a=20p
+
+.PARAM ps1=78.03p     ps2=-90.82m    ps3=210p       ps4=-1.22      ps6=23p        ps7=1.8
+.PARAM pc0=20p
+
+.PARAM qs6=6.26p      qs7=103.35p    qs8=-45.9m
+
+.PARAM q80=129.15p    q81=84.07p     q82=2.65p      q85=0          qs1=58.27p     qs2=155.06p
+.PARAM qs3=-56.75m    f2r=437.2m
+
+.PARAM x1={(q80-q81)/q82}       x2={q80/q82}
+.PARAM Vmin=2.16      Vmax=2.96      dCmax=330m
+.PARAM Vth={Vth0+(Vmax-Vth0)*limit(dVth,0,1)-(Vmin-Vth0)*limit(dVth,-1,0)}
+.PARAM q0={b0*((1-fbet)*(T0/Tref)**mubet+fbet)*a}
+.PARAM q1={tanh((Unn-Inn*Rs-Vth0)*eta)/eta*q0}
+.PARAM q2={(Fm*SQRT(0.4)-c)*Inn*q0}
+.PARAM Rlim={(q1+2*q2*Rmax-SQRT(q1**2+4*q2))/(2*q2)}
+.PARAM dRd={Rd/a+if(dVth==0,limit(dR,0,1)*max(Rlim-Rd/a-Rs-Rp,0),0)}
+.PARAM bm={c/((1/gmin-Rs)**2*Inn*a*((1-fbet)*(T0/Tref)**mubet+fbet))}
+.PARAM bet={b0+(b0-bm)*if(dR==0,if(dVth==0,limit(dgfs,-1,0),0),0)}
+.PARAM dC1={1+dCmax*limit(dC,0,1)}
+.PARAM dC2={1+dCmax*limit(dC,0,1)}
+
+.PARAM Cgs0={(f3*a+sqrt(a)*f3b)*dC1}
+.PARAM Cgs1={f3a*a*dC1}
+
+.PARAM Cds1={qs6*a*dC1}
+.PARAM Cds2={qs7*a*dC1}
+.PARAM Cds5={qs1*a*dC1}
+.PARAM Cds6={(a*qs2*(1+f2r/sqrt(a)))*dC1}
+.PARAM Cds8={q80*a*dC1}
+
+.PARAM Cdg1={(ps1*a+pc0*sqrt(a))*dC2}
+.PARAM Cdg2={ps3*a*dC2}
+.PARAM Cdg3={(ps6)*dC2}
+.PARAM dRdi={Rdi/a}
+
+.FUNC Ue(g,y,w)  {(g-Vth+auth*(w-Tref)+Fm*y**Fn)}
+.FUNC Ue1(g,y,w) {Ue(g,y,w)+(1+limit(Ue(g,y,w)+dvx,0,1)**2*(2*limit(Ue(g,y,w)+dvx,0,1)-3))*(dvgs+(auth_sub-auth)*(w-Tref))}
+
+.FUNC Ia(Uee,p,pp,z1) {if(Uee>pp,(Uee-c*z1)*z1,p*(pp-p)/c*exp((Uee-pp)/p))}
+.FUNC Ih(Uds,T,p,Uee) {bet*((1-fbet)*(T0/T)**mubet+fbet)*Ia(Uee,p,min(2*p,p+c*Uds),min(Uds,Uee/(2*c)))}
+.FUNC Jh(d,g,w,y,s,x) 
++{a*((Ih(s*y+min(d,0),w,(p0+(p1+p2*w)*w)*kbq*w,tanh(eta*Ue1(g,y,w))/eta)+exp(min(lB+(d-UB-ab*(w-Tref))/UT,24))))}
+
+.FUNC Idiode(Usd,Tj,Iss) {exp(min(log(Iss)+Usd/(ndi*kbq*Tj),7))-Iss}
+.FUNC Idiod(Usd,Tj)      {a*Idiode(Usd,Tj,exp(min(lnIsj+(Tj/Tref-1)*1.12/(ndi*kbq*Tj),7))*(Tj/Tref)**n_Isj)}
+
+.FUNC Pr(Vss0,Vssp)  {Vss0*Vss0/Rm+Vssp*Vssp/Rsp}
+.FUNC Q01(Uds) {a*(limit(Uds,x1,x2)*(q80-q82/2*limit(Uds,x1,x2))+min(Uds-x1,0)*q81-max(x1,0)*(q80-q81)/2)}
+
+C_Cgs  g      s      {Cgs0}
+C_Cgs1 g      sp     {Cgs1}
+
+C_Cds1 d      s      {Cds1}
+E_Eds2 d      edep2  VALUE {V(d,s)-I(V_sense3)/Cds2}
+C_Cds2 edep2  s      {Cds2}
+
+C_Cds5 d      sp     {Cds5}
+E_Eds6 d      edep6  VALUE {if(qs3==0,0,V(d,sp)-(exp(qs3*max(V(d,sp),0))-1)/min(qs3,-1u)-min(V(d,sp),0))}
+C_Cds6 edep6  sp     {Cds6}
+E_Eds8 d      edep8  VALUE {V(d,sp)-Q01(V(d,sp))/Cds8}
+C_Cds8 edep8  sp     {Cds8}
+
+E_Edg1 d    ox1 VALUE {if(ps2==0,0,V(d,g)-(exp(ps2*max(V(d,g),0))-1)/min(ps2,-1u)-min(V(d,g),0))}
+C_Cdg1 ox1  g   {Cdg1}
+E_Edg2 d    ox2 VALUE =
++{if(ps4==0,0,V(d,g)-((exp(ps4*(max(V(d,g)+ps7,0)))-exp(ps4*max(ps7,0)))/min(ps4,-1u)+min(V(d,g)+max(ps7,0),max(0,-ps7))))}
+C_Cdg2 ox2  g   {Cdg2}
+C_Cdg3 d    g   {Cdg3}
+
+Rfp     s sp    {Rsp}
+
+G_chan   d5a   s  VALUE={Jh(V(d5a,s),V(g,s),T0+limit(V(Tj),-200,300),(SQRT(1+4*al*max(V(d5a,s),0))-1)/2/al,sgn(V(d5a,s)),0)}
+Rd06     d5a  d5  1u
+V_sm     d    d5  0
+G_RMos   d1    d  VALUE={V(d1,d)/(Rf*dRd+(1-Rf)*dRd*((limit(V(Tj),-200,999)+T0)/Tref)**nmu)}
+
+V_sense  dd   d1  0
+G_diode   s   d3  VALUE={Idiod(V(s,d3),T0+limit(V(Tj),-200,499))}
+G_Rdio   d2   d1  VALUE={V(d2,d1)/(dRdi*((limit(V(Tj),-200,999)+T0)/Tref)**nmu2)}
+V_sense2 d2   d3  0
+
+
+L_L001 a c {td/(ta+td)}
+R_R001 a b {1/ta}
+V_sense3 c 0 0
+E_E001 b 0 VALUE {I(V_sense2)}
+E_E002 e 0 VALUE {Cds2*((exp(qs8*max(V(d,s),-1))-1)/min(qs8,-1u)+min(V(d,s)+1,0)*exp(-qs8))}
+R_R002 e c 1
+R_R003 a 0 500Meg
+
+R1        g    s  1G
+Rd01      d    s  500Meg
+Rd02     d2    s  500Meg
+Rd03     d1    d  1k
+Rd07     d3    s  1G
+Rssp      g   sp  100Meg
+
+Rmet      s    s0 {Rm}
+
+
+G_TH      0   Tj  VALUE =
++{(I(V_sense)-I(V_sense2))*V(d1,d)+I(V_sm)*V(d,s)+I(V_sense2)*V(d1,s)+Pr(V(s,s0),V(s,sp))}
+
+
+.ENDS
+
+**********
+
+.SUBCKT IPB014N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=3.6n Ld=0.1n Lg=6.5n
+
+.PARAM Rs=592u      Rg=1.4       Rd=50u       Rm=123u
+.PARAM Inn=100      Unn=10       Rmax=1.4m    gmin=88
+.PARAM act=27.86    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IPF011N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=1.9n Ld=0.1n Lg=6.5n
+
+.PARAM Rs=338u      Rg=1.4       Rd=20u       Rm=71u
+.PARAM Inn=100      Unn=10       Rmax=1.1m    gmin=92
+.PARAM act=27.86    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IPP014N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=1.8n Ld=2.5n Lg=4n
+
+.PARAM Rs=487u      Rg=1.4       Rd=177u      Rm=123u
+.PARAM Inn=100      Unn=10       Rmax=1.4m    gmin=88
+.PARAM act=27.86    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IPT009N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=0.5n Ld=0.1n Lg=2.7n
+
+.PARAM Rs=215u      Rg=1.4       Rd=20u       Rm=77u
+.PARAM Inn=150      Unn=10       Rmax=950u    gmin=145
+.PARAM act=27.83    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IQE031N08LM6CGSC_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=0.55      Rd=80u       Rm=10u
+.PARAM Inn=20       Unn=10       Rmax=3.15m   gmin=53
+.PARAM act=5.08     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_k_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IQE031N08LM6CG_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=0.55      Rd=80u       Rm=10u
+.PARAM Inn=20       Unn=10       Rmax=3.15m   gmin=53
+.PARAM act=5.08     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_k_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6CGSC_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6CG_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6SC_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC014N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=158u      Rg=0.8       Rd=10u       Rm=34u
+.PARAM Inn=50       Unn=10       Rmax=1.45m   gmin=63
+.PARAM act=14.421   Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC018N08NM6SC_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=154u      Rg=0.6       Rd=10u       Rm=16u
+.PARAM Inn=50       Unn=10       Rmax=1.8m    gmin=56
+.PARAM act=11.37    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC018N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=154u      Rg=0.6       Rd=10u       Rm=16u
+.PARAM Inn=50       Unn=10       Rmax=1.8m    gmin=48
+.PARAM act=11.37    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC031N08NM6SC_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=247u      Rg=0.65      Rd=10u       Rm=73u
+.PARAM Inn=50       Unn=10       Rmax=3.1m    gmin=42
+.PARAM act=6.495    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC031N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=350p Ld=100p Lg=2.2n
+
+.PARAM Rs=247u      Rg=0.65      Rd=10u       Rm=73u
+.PARAM Inn=50       Unn=10       Rmax=3.1m    gmin=35
+.PARAM act=6.495    Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC056N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=460p Ld=100p Lg=2.2n
+
+.PARAM Rs=346u      Rg=1         Rd=10u       Rm=158u
+.PARAM Inn=40       Unn=10       Rmax=5.6m    gmin=23
+.PARAM act=3.64     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC088N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=460p Ld=100p Lg=2.2n
+
+.PARAM Rs=321u      Rg=1.05      Rd=10u       Rm=133u
+.PARAM Inn=28       Unn=10       Rmax=8.8m    gmin=15
+.PARAM act=2.27     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISC151N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=460p Ld=100p Lg=2.2n
+
+.PARAM Rs=290u      Rg=1.1       Rd=10u       Rm=102u
+.PARAM Inn=18       Unn=10       Rmax=15.1m   gmin=9.2
+.PARAM act=1.32     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISZ053N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=250p Ld=100p Lg=1.2n
+
+.PARAM Rs=232u      Rg=1         Rd=20u       Rm=103u
+.PARAM Inn=20       Unn=10       Rmax=5.3m    gmin=17
+.PARAM act=3.64     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT ISZ157N08NM6_L1 drain gate source PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Ls=300p Ld=100p Lg=1.2n
+
+.PARAM Rs=856u      Rg=1.1       Rd=20u       Rm=318u
+.PARAM Inn=18       Unn=10       Rmax=15.7m   gmin=11
+.PARAM act=1.32     Rsp=0.1     
+
+X1  d1 g s sp Tj1 S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
++Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+
+E1    Tj     w    VALUE={TEMP}
+Vp    Tj1    Tj   0
+R1    Tj     Tj1  1u
+G_power 0    Tj   VALUE={V(s1,s)*V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)+V(g,g1)*V(g,g1)/Rg+V(d1,d2)*V(d1,d2)/Rd+I(Vp)}
+R2      w    0    1u
+
+.ENDS
+
+**********
+
+.SUBCKT IPB014N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=3.6n Ld=0.1n Lg=6.5n
+
+.PARAM Rs=592u      Rg=1.4       Rd=50u       Rm=123u
+
+.PARAM Inn=100      Unn=10       Rmax=1.4m    gmin=88
+.PARAM RRf=319m     Rrbond=0.01  Rtb=4.8      g2=710m
+.PARAM act=27.86    Rsp=0.1     
+
+.FUNC Pb(I,dT,Rb)  {Rb/(2*Rtb)*(I-limit(dT/(max(I,1n)*Rb)+RRf*I*g2,0,I))**2}
+
+X1  d1 g s sp Tj S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+G_TH  0    Tb  VALUE =  {Pb(abs(I(Ls)),V(Tj,Tcase),Rrbond*(1+(limit((V(Tb)+V(Tj))/2,-200,999)-25)*4m))}
+Cthb  Tb      0               7.316m
+Rthb  Tb      Tj              {Rtb}
+Rth1  Tj      t1              {1.18m+limit(Zthtype,0,1)*433.98u}
+Rth2  t1      t2              {12.95m+limit(Zthtype,0,1)*4.79m}
+Rth3  t2      t3              {28.55m+limit(Zthtype,0,1)*6.62m}
+Rth4  t3      t4              {63.55m+limit(Zthtype,0,1)*29.97m}
+Rth5  t4      Tcase           {171.2m+limit(Zthtype,0,1)*80.75m}
+Cth1  Tj      0               387.87u
+Cth2  t1      0               880.15u
+Cth3  t2      0               3.62m
+Cth4  t3      0               4.74m
+Cth5  t4      0               139.48m
+Cth6  Tcase   0               190m
+
+.ENDS
+
+**********
+
+.SUBCKT IPF011N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=1.9n Ld=0.1n Lg=6.5n
+
+.PARAM Rs=338u      Rg=1.4       Rd=20u       Rm=71u
+
+.PARAM Inn=100      Unn=10       Rmax=1.1m    gmin=92
+.PARAM RRf=382m     Rrbond=0.005 Rtb=3.6      g2=647m
+.PARAM act=27.86    Rsp=0.1     
+
+.FUNC Pb(I,dT,Rb)  {Rb/(2*Rtb)*(I-limit(dT/(max(I,1n)*Rb)+RRf*I*g2,0,I))**2}
+
+X1  d1 g s sp Tj S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+G_TH  0    Tb  VALUE =  {Pb(abs(I(Ls)),V(Tj,Tcase),Rrbond*(1+(limit((V(Tb)+V(Tj))/2,-200,999)-25)*4m))}
+Cthb  Tb      0               9.755m
+Rthb  Tb      Tj              {Rtb}
+Rth1  Tj      t1              {1.18m+limit(Zthtype,0,1)*433.98u}
+Rth2  t1      t2              {12.95m+limit(Zthtype,0,1)*4.79m}
+Rth3  t2      t3              {28.55m+limit(Zthtype,0,1)*6.62m}
+Rth4  t3      t4              {63.55m+limit(Zthtype,0,1)*29.97m}
+Rth5  t4      Tcase           {171.2m+limit(Zthtype,0,1)*80.75m}
+Cth1  Tj      0               387.87u
+Cth2  t1      0               880.15u
+Cth3  t2      0               3.62m
+Cth4  t3      0               4.74m
+Cth5  t4      0               139.48m
+Cth6  Tcase   0               190m
+
+.ENDS
+
+**********
+
+.SUBCKT IPP014N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=1.8n Ld=2.5n Lg=4n
+
+.PARAM Rs=487u      Rg=1.4       Rd=177u      Rm=123u
+
+.PARAM Inn=100      Unn=10       Rmax=1.4m    gmin=88
+.PARAM RRf=406m     Rrbond=0.01  Rtb=4.8      g2=710m
+.PARAM act=27.86    Rsp=0.1     
+
+.FUNC Pb(I,dT,Rb)  {Rb/(2*Rtb)*(I-limit(dT/(max(I,1n)*Rb)+RRf*I*g2,0,I))**2}
+
+X1  d1 g s sp Tj S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+G_TH  0    Tb  VALUE =  {Pb(abs(I(Ls)),V(Tj,Tcase),Rrbond*(1+(limit((V(Tb)+V(Tj))/2,-200,999)-25)*4m))}
+Cthb  Tb      0               7.316m
+Rthb  Tb      Tj              {Rtb}
+Rth1  Tj      t1              {1.18m+limit(Zthtype,0,1)*433.98u}
+Rth2  t1      t2              {12.95m+limit(Zthtype,0,1)*4.79m}
+Rth3  t2      t3              {28.55m+limit(Zthtype,0,1)*6.62m}
+Rth4  t3      t4              {63.55m+limit(Zthtype,0,1)*29.97m}
+Rth5  t4      Tcase           {171.2m+limit(Zthtype,0,1)*80.75m}
+Cth1  Tj      0               387.87u
+Cth2  t1      0               880.15u
+Cth3  t2      0               3.62m
+Cth4  t3      0               4.74m
+Cth5  t4      0               139.48m
+Cth6  Tcase   0               220m
+
+.ENDS
+
+**********
+
+.SUBCKT IPT009N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=0.5n Ld=0.1n Lg=2.7n
+
+.PARAM Rs=215u      Rg=1.4       Rd=20u       Rm=77u
+
+.PARAM Inn=150      Unn=10       Rmax=950u    gmin=145
+.PARAM RRf=500m     Rrbond=0.003 Rtb=2.6      g2=999m
+.PARAM act=27.83    Rsp=0.1     
+
+.FUNC Pb(I,dT,Rb)  {Rb/(2*Rtb)*(I-limit(dT/(max(I,1n)*Rb)+RRf*I*g2,0,I))**2}
+
+X1  d1 g s sp Tj S8_80_j_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+G_TH  0    Tb  VALUE =  {Pb(abs(I(Ls)),V(Tj,Tcase),Rrbond*(1+(limit((V(Tb)+V(Tj))/2,-200,999)-25)*4m))}
+Cthb  Tb      0               10.974m
+Rthb  Tb      Tj              {Rtb}
+Rth1  Tj      t1              {1.18m+limit(Zthtype,0,1)*435.72u}
+Rth2  t1      t2              {12.97m+limit(Zthtype,0,1)*4.79m}
+Rth3  t2      t3              {28.58m+limit(Zthtype,0,1)*6.63m}
+Rth4  t3      t4              {51.36m+limit(Zthtype,0,1)*49.79m}
+Rth5  t4      Tcase           {124.03m+limit(Zthtype,0,1)*120.23m}
+Cth1  Tj      0               387.46u
+Cth2  t1      0               879.22u
+Cth3  t2      0               3.61m
+Cth4  t3      0               4.9m
+Cth5  t4      0               80m
+Cth6  Tcase   0               30m
+
+.ENDS
+
+**********
+
+.SUBCKT IQE031N08LM6CG drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=0.55      Rd=80u       Rm=10u
+
+.PARAM Inn=20       Unn=10       Rmax=3.15m   gmin=53
+.PARAM act=5.08     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_k_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {6.46m+limit(Zthtype,0,1)*2.39m}
+Rth2  t1      t2              {68.18m+limit(Zthtype,0,1)*25.23m}
+Rth3  t2      t3              {85.96m+limit(Zthtype,0,1)*11.37m}
+Rth4  t3      t4              {140.68m+limit(Zthtype,0,1)*199.31m}
+Rth5  t4      Tcase           {273.26m+limit(Zthtype,0,1)*387.15m}
+Cth1  Tj      0               70.72u
+Cth2  t1      0               167.19u
+Cth3  t2      0               406.34u
+Cth4  t3      0               895.19u
+Cth5  t4      0               6.37m
+Cth6  Tcase   0               10m
+
+.ENDS
+
+**********
+
+.SUBCKT IQE031N08LM6CGSC drain gate source Tj Ttop Tbottom PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=0.55      Rd=80u       Rm=10u
+
+.PARAM Inn=20       Unn=10       Rmax=3.15m   gmin=53
+.PARAM act=5.08     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_k_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {6.46m+limit(Zthtype,0,1)*2.39m}
+Rth2  t1      t2              {68.18m+limit(Zthtype,0,1)*25.23m}
+Rth3  t2      t3              {85.96m+limit(Zthtype,0,1)*11.37m}
+Rth4  t3      t4              {140.68m+limit(Zthtype,0,1)*199.31m}
+Rth5  t4      Tbottom         {273.26m+limit(Zthtype,0,1)*387.15m}
+Cth1  Tj      0               70.72u
+Cth2  t1      0               167.19u
+Cth3  t2      0               406.34u
+Cth4  t3      0               895.19u
+Cth5  t4      0               6.37m
+Cth6  Tbottom 0               10m
+Rth1t Tj      tt1             {406.25m+limit(Zthtype,0,1)*222.2m}
+Rth2t tt1     tt2             {150.94m+limit(Zthtype,0,1)*222.2m}
+Rth3t tt2     Ttop            {169.48m+limit(Zthtype,0,1)*228.93m}
+Cth1t tt1     0               176.8u
+Cth2t tt2     0               603.63u
+Cth3t Ttop    0               1.67m
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {6.46m+limit(Zthtype,0,1)*2.39m}
+Rth2  t1      t2              {68.18m+limit(Zthtype,0,1)*25.23m}
+Rth3  t2      t3              {85.96m+limit(Zthtype,0,1)*11.37m}
+Rth4  t3      t4              {140.68m+limit(Zthtype,0,1)*199.31m}
+Rth5  t4      Tcase           {273.26m+limit(Zthtype,0,1)*387.15m}
+Cth1  Tj      0               70.72u
+Cth2  t1      0               167.19u
+Cth3  t2      0               406.34u
+Cth4  t3      0               895.19u
+Cth5  t4      0               6.37m
+Cth6  Tcase   0               10m
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6CG drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {6.46m+limit(Zthtype,0,1)*2.39m}
+Rth2  t1      t2              {68.18m+limit(Zthtype,0,1)*25.23m}
+Rth3  t2      t3              {85.96m+limit(Zthtype,0,1)*11.37m}
+Rth4  t3      t4              {140.68m+limit(Zthtype,0,1)*199.31m}
+Rth5  t4      Tcase           {273.26m+limit(Zthtype,0,1)*387.15m}
+Cth1  Tj      0               70.72u
+Cth2  t1      0               167.19u
+Cth3  t2      0               406.34u
+Cth4  t3      0               895.19u
+Cth5  t4      0               6.37m
+Cth6  Tcase   0               10m
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6CGSC drain gate source Tj Ttop Tbottom PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {6.46m+limit(Zthtype,0,1)*2.39m}
+Rth2  t1      t2              {68.18m+limit(Zthtype,0,1)*25.23m}
+Rth3  t2      t3              {85.96m+limit(Zthtype,0,1)*11.37m}
+Rth4  t3      t4              {140.68m+limit(Zthtype,0,1)*199.31m}
+Rth5  t4      Tbottom         {273.26m+limit(Zthtype,0,1)*387.15m}
+Cth1  Tj      0               70.72u
+Cth2  t1      0               167.19u
+Cth3  t2      0               406.34u
+Cth4  t3      0               895.19u
+Cth5  t4      0               6.37m
+Cth6  Tbottom 0               10m
+Rth1t Tj      tt1             {406.25m+limit(Zthtype,0,1)*222.2m}
+Rth2t tt1     tt2             {150.94m+limit(Zthtype,0,1)*222.2m}
+Rth3t tt2     Ttop            {169.48m+limit(Zthtype,0,1)*228.93m}
+Cth1t tt1     0               176.8u
+Cth2t tt2     0               603.63u
+Cth3t Ttop    0               1.67m
+
+.ENDS
+
+**********
+
+.SUBCKT IQE036N08NM6SC drain gate source Tj Ttop Tbottom PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=100p Ld=250p Lg=1n
+
+.PARAM Rs=11u       Rg=1         Rd=80u       Rm=10u
+
+.PARAM Inn=30       Unn=10       Rmax=3.6m    gmin=30
+.PARAM act=4.98     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i1_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {6.46m+limit(Zthtype,0,1)*2.39m}
+Rth2  t1      t2              {68.18m+limit(Zthtype,0,1)*25.23m}
+Rth3  t2      t3              {85.96m+limit(Zthtype,0,1)*11.37m}
+Rth4  t3      t4              {140.68m+limit(Zthtype,0,1)*199.31m}
+Rth5  t4      Tbottom         {273.26m+limit(Zthtype,0,1)*387.15m}
+Cth1  Tj      0               70.72u
+Cth2  t1      0               167.19u
+Cth3  t2      0               406.34u
+Cth4  t3      0               895.19u
+Cth5  t4      0               6.37m
+Cth6  Tbottom 0               10m
+Rth1t Tj      tt1             {406.25m+limit(Zthtype,0,1)*222.2m}
+Rth2t tt1     tt2             {150.94m+limit(Zthtype,0,1)*222.2m}
+Rth3t tt2     Ttop            {169.48m+limit(Zthtype,0,1)*228.93m}
+Cth1t tt1     0               176.8u
+Cth2t tt2     0               603.63u
+Cth3t Ttop    0               1.67m
+
+.ENDS
+
+**********
+
+
+
+.SUBCKT ISC014N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=158u      Rg=0.8       Rd=10u       Rm=34u
+
+.PARAM Inn=50       Unn=10       Rmax=1.45m   gmin=63
+.PARAM act=14.421   Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {2.28m+limit(Zthtype,0,1)*838.05u}
+Rth2  t1      t2              {24.72m+limit(Zthtype,0,1)*9.15m}
+Rth3  t2      t3              {41.07m+limit(Zthtype,0,1)*7.64m}
+Rth4  t3      t4              {49.56m+limit(Zthtype,0,1)*50.31m}
+Rth5  t4      Tcase           {200.7m+limit(Zthtype,0,1)*203.73m}
+Cth1  Tj      0               200.77u
+Cth2  t1      0               461.08u
+Cth3  t2      0               1.45m
+Cth4  t3      0               2.54m
+Cth5  t4      0               14.27m
+Cth6  Tcase   0               30m
+
+.ENDS
+
+**********
+
+.SUBCKT ISC018N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=154u      Rg=0.6       Rd=10u       Rm=16u
+
+.PARAM Inn=50       Unn=10       Rmax=1.8m    gmin=48
+.PARAM act=11.37    Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {2.89m+limit(Zthtype,0,1)*1.06m}
+Rth2  t1      t2              {31.19m+limit(Zthtype,0,1)*11.54m}
+Rth3  t2      t3              {39.42m+limit(Zthtype,0,1)*4.81m}
+Rth4  t3      t4              {62.86m+limit(Zthtype,0,1)*73.04m}
+Rth5  t4      Tcase           {214.24m+limit(Zthtype,0,1)*248.94m}
+Cth1  Tj      0               158.3u
+Cth2  t1      0               365.49u
+Cth3  t2      0               880.62u
+Cth4  t3      0               2m
+Cth5  t4      0               11.27m
+Cth6  Tcase   0               30m
+
+.ENDS
+
+**********
+
+.SUBCKT ISC018N08NM6SC drain gate source Tj Ttop Tbottom PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=154u      Rg=0.6       Rd=10u       Rm=16u
+
+.PARAM Inn=50       Unn=10       Rmax=1.8m    gmin=56
+.PARAM act=11.37    Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {2.89m+limit(Zthtype,0,1)*1.06m}
+Rth2  t1      t2              {31.19m+limit(Zthtype,0,1)*11.54m}
+Rth3  t2      t3              {39.42m+limit(Zthtype,0,1)*4.81m}
+Rth4  t3      t4              {62.86m+limit(Zthtype,0,1)*73.04m}
+Rth5  t4      Tbottom         {214.24m+limit(Zthtype,0,1)*248.94m}
+Cth1  Tj      0               158.3u
+Cth2  t1      0               365.49u
+Cth3  t2      0               880.62u
+Cth4  t3      0               2m
+Cth5  t4      0               11.27m
+Cth6  Tbottom 0               30m
+Rth1t Tj      tt1             {128.55m+limit(Zthtype,0,1)*118.33m}
+Rth2t tt1     tt2             {135.81m+limit(Zthtype,0,1)*118.33m}
+Rth3t tt2     Ttop            {97.06m+limit(Zthtype,0,1)*121.92m}
+Cth1t tt1     0               1.52m
+Cth2t tt2     0               3.33m
+Cth3t Ttop    0               4.48m
+
+.ENDS
+
+**********
+
+.SUBCKT ISC031N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=350p Ld=100p Lg=2.2n
+
+.PARAM Rs=247u      Rg=0.65      Rd=10u       Rm=73u
+
+.PARAM Inn=50       Unn=10       Rmax=3.1m    gmin=35
+.PARAM act=6.495    Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {5.05m+limit(Zthtype,0,1)*1.87m}
+Rth2  t1      t2              {53.77m+limit(Zthtype,0,1)*19.89m}
+Rth3  t2      t3              {67.84m+limit(Zthtype,0,1)*8.73m}
+Rth4  t3      t4              {110.03m+limit(Zthtype,0,1)*145.53m}
+Rth5  t4      Tcase           {252.85m+limit(Zthtype,0,1)*334.43m}
+Cth1  Tj      0               90.42u
+Cth2  t1      0               212.02u
+Cth3  t2      0               513.75u
+Cth4  t3      0               1.14m
+Cth5  t4      0               7.36m
+Cth6  Tcase   0               30m
+
+.ENDS
+
+**********
+
+.SUBCKT ISC031N08NM6SC drain gate source Tj Ttop Tbottom PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=250p Ld=100p Lg=2.2n
+
+.PARAM Rs=247u      Rg=0.65      Rd=10u       Rm=73u
+
+.PARAM Inn=50       Unn=10       Rmax=3.1m    gmin=42
+.PARAM act=6.495    Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {5.05m+limit(Zthtype,0,1)*1.87m}
+Rth2  t1      t2              {53.77m+limit(Zthtype,0,1)*19.89m}
+Rth3  t2      t3              {67.84m+limit(Zthtype,0,1)*8.73m}
+Rth4  t3      t4              {110.03m+limit(Zthtype,0,1)*145.53m}
+Rth5  t4      Tbottom         {252.85m+limit(Zthtype,0,1)*334.43m}
+Cth1  Tj      0               90.42u
+Cth2  t1      0               212.02u
+Cth3  t2      0               513.75u
+Cth4  t3      0               1.14m
+Cth5  t4      0               7.36m
+Cth6  Tbottom 0               30m
+Rth1t Tj      tt1             {165.79m+limit(Zthtype,0,1)*142.03m}
+Rth2t tt1     tt2             {153.02m+limit(Zthtype,0,1)*142.03m}
+Rth3t tt2     Ttop            {110.79m+limit(Zthtype,0,1)*146.34m}
+Cth1t tt1     0               1.18m
+Cth2t tt2     0               2.63m
+Cth3t Ttop    0               3.87m
+
+.ENDS
+
+**********
+
+.SUBCKT ISC056N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=460p Ld=100p Lg=2.2n
+
+.PARAM Rs=346u      Rg=1         Rd=10u       Rm=158u
+
+.PARAM Inn=40       Unn=10       Rmax=5.6m    gmin=23
+.PARAM act=3.64     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {9.02m+limit(Zthtype,0,1)*3.33m}
+Rth2  t1      t2              {93.95m+limit(Zthtype,0,1)*34.76m}
+Rth3  t2      t3              {118.3m+limit(Zthtype,0,1)*16.32m}
+Rth4  t3      t4              {196.34m+limit(Zthtype,0,1)*283.21m}
+Rth5  t4      Tcase           {304.93m+limit(Zthtype,0,1)*439.84m}
+Cth1  Tj      0               50.68u
+Cth2  t1      0               121.34u
+Cth3  t2      0               296.27u
+Cth4  t3      0               641.44u
+Cth5  t4      0               5.43m
+Cth6  Tcase   0               30m
+
+.ENDS
+
+**********
+
+.SUBCKT ISC088N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=460p Ld=100p Lg=2.2n
+
+.PARAM Rs=321u      Rg=1.05      Rd=10u       Rm=133u
+
+.PARAM Inn=28       Unn=10       Rmax=8.8m    gmin=15
+.PARAM act=2.27     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {14.46m+limit(Zthtype,0,1)*5.35m}
+Rth2  t1      t2              {147.37m+limit(Zthtype,0,1)*54.54m}
+Rth3  t2      t3              {185.22m+limit(Zthtype,0,1)*27.39m}
+Rth4  t3      t4              {314.83m+limit(Zthtype,0,1)*463.6m}
+Rth5  t4      Tcase           {358.84m+limit(Zthtype,0,1)*528.41m}
+Cth1  Tj      0               31.6u
+Cth2  t1      0               77.35u
+Cth3  t2      0               190.36u
+Cth4  t3      0               400.02u
+Cth5  t4      0               4.66m
+Cth6  Tcase   0               30m
+
+.ENDS
+
+**********
+
+.SUBCKT ISC151N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=460p Ld=100p Lg=2.2n
+
+.PARAM Rs=290u      Rg=1.1       Rd=10u       Rm=102u
+
+.PARAM Inn=18       Unn=10       Rmax=15.1m   gmin=9.2
+.PARAM act=1.32     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {24.86m+limit(Zthtype,0,1)*9.2m}
+Rth2  t1      t2              {245.42m+limit(Zthtype,0,1)*90.83m}
+Rth3  t2      t3              {307.78m+limit(Zthtype,0,1)*50.05m}
+Rth4  t3      t4              {541.42m+limit(Zthtype,0,1)*772.06m}
+Rth5  t4      Tcase           {436.26m+limit(Zthtype,0,1)*622.11m}
+Cth1  Tj      0               18.38u
+Cth2  t1      0               46.45u
+Cth3  t2      0               115.61u
+Cth4  t3      0               232.61u
+Cth5  t4      0               4.53m
+Cth6  Tcase   0               30m
+
+.ENDS
+
+**********
+
+.SUBCKT ISZ053N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=250p Ld=100p Lg=1.2n
+
+.PARAM Rs=232u      Rg=1         Rd=20u       Rm=103u
+
+.PARAM Inn=20       Unn=10       Rmax=5.3m    gmin=17
+.PARAM act=3.64     Rsp=0.1     
+
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+Rth1  Tj      t1              {9.02m+limit(Zthtype,0,1)*3.33m}
+Rth2  t1      t2              {93.95m+limit(Zthtype,0,1)*34.76m}
+Rth3  t2      t3              {118.3m+limit(Zthtype,0,1)*16.32m}
+Rth4  t3      t4              {196.34m+limit(Zthtype,0,1)*283.21m}
+Rth5  t4      Tcase           {304.93m+limit(Zthtype,0,1)*439.84m}
+Cth1  Tj      0               50.68u
+Cth2  t1      0               121.34u
+Cth3  t2      0               296.27u
+Cth4  t3      0               641.44u
+Cth5  t4      0               5.43m
+Cth6  Tcase   0               10m
+
+.ENDS
+
+**********
+
+.SUBCKT ISZ157N08NM6 drain gate source Tj Tcase PARAMS: dVth=0 dRdson=0 dgfs=0 dC=0 Zthtype=0 Ls=300p Ld=100p Lg=1.2n
+
+.PARAM Rs=856u      Rg=1.1       Rd=20u       Rm=318u
+
+.PARAM Inn=18       Unn=10       Rmax=15.7m   gmin=11
+.PARAM RRf=499m     Rrbond=0.038 Rtb=9.4      g2=971m
+.PARAM act=1.32     Rsp=0.1     
+
+.FUNC Pb(I,dT,Rb)  {Rb/(2*Rtb)*(I-limit(dT/(max(I,1n)*Rb)+RRf*I*g2,0,I))**2}
+
+X1  d1 g s sp Tj S8_80_i_var PARAMS: a={act} Rsp={Rsp} dVth={dVth} dR={dRdson} dgfs={dgfs} Inn={Inn} Unn={Unn}
+                                        +Rmax={Rmax} gmin={gmin} Rs={Rs} Rp={Rd} dC={dC} Rm={Rm}
+Rg    g1     g    {Rg}
+Lg    gate   g1   {Lg*if(dgfs==99,0,1)}
+Gs    s1     s    VALUE={V(s1,s)/(Rs*(1+(limit(V(Tj),-200,999)-25)*4m)-Rm)}
+Rsa   s1     s    1Meg
+Ls    source s1   {Ls*if(dgfs==99,0,1)}
+Rda   d1     d2   {Rd}
+Ld    drain  d2   {Ld*if(dgfs==99,0,1)}
+Rsb   source s1    10
+Rga   gate   g1    10
+Rdb   drain  d2    10
+
+G_TH  0    Tb  VALUE =  {Pb(abs(I(Ls)),V(Tj,Tcase),Rrbond*(1+(limit((V(Tb)+V(Tj))/2,-200,999)-25)*4m))}
+Cthb  Tb      0               210u
+Rthb  Tb      Tj              {Rtb}
+Rth1  Tj      t1              {24.86m+limit(Zthtype,0,1)*9.2m}
+Rth2  t1      t2              {245.42m+limit(Zthtype,0,1)*90.83m}
+Rth3  t2      t3              {307.78m+limit(Zthtype,0,1)*50.05m}
+Rth4  t3      t4              {541.42m+limit(Zthtype,0,1)*772.06m}
+Rth5  t4      Tcase           {436.26m+limit(Zthtype,0,1)*622.11m}
+Cth1  Tj      0               18.38u
+Cth2  t1      0               46.45u
+Cth3  t2      0               115.61u
+Cth4  t3      0               232.61u
+Cth5  t4      0               4.53m
+Cth6  Tcase   0               10m
+
+.ENDS
+
+**********
+
+.SUBCKT IPB014N08NM6_L0 drain gate source
+
+Lg     gate   g1   6.5n
+Ld     drain  d1   0.1n
+Ls     source s1   3.6n
+Rs     s1     s2   592u  TC=3m
+
+Rg     g1     g2   1.4
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=579.5  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    0.33m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=7.72n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=13.48n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=77.2p  N=1.08  RS=0.02u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.07m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   3.27n
+.MODEL     DGD    D(M=0.65  CJO=3.27n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    10.38n
+Cox1    d2    g2    5p
+
+.ENDS IPB014N08NM6_L0
+
+*****************
+
+.SUBCKT IPF011N08NM6_L0 drain gate source
+
+Lg     gate   g1   6.5n
+Ld     drain  d1   0.1n
+Ls     source s1   1.9n
+Rs     s1     s2   338u  TC=3m
+
+Rg     g1     g2   1.4
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=579.5  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    0.3m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=7.72n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=13.48n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=77.2p  N=1.08  RS=0.02u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.07m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   3.27n
+.MODEL     DGD    D(M=0.65  CJO=3.27n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    10.38n
+Cox1    d2    g2    5p
+
+.ENDS IPF011N08NM6_L0
+
+*****************
+
+.SUBCKT IPP014N08NM6_L0 drain gate source
+
+Lg     gate   g1   4n
+Ld     drain  d1   2.5n
+Ls     source s1   1.8n
+Rs     s1     s2   487u  TC=3m
+
+Rg     g1     g2   1.4
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=579.5  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    0.45m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=7.72n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=13.48n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=77.2p  N=1.08  RS=0.02u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.07m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   3.27n
+.MODEL     DGD    D(M=0.65  CJO=3.27n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    10.38n
+Cox1    d2    g2    5p
+
+.ENDS IPP014N08NM6_L0
+
+*****************
+
+.SUBCKT IPT009N08NM6_L0 drain gate source
+
+Lg     gate   g1   2.7n
+Ld     drain  d1   0.1n
+Ls     source s1   0.5n
+Rs     s1     s2   215u  TC=3m
+
+Rg     g1     g2   1.4
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=578.9  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    0.3m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=7.71n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=13.47n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=77.1p  N=1.08  RS=0.02u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.07m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   3.26n
+.MODEL     DGD    D(M=0.65  CJO=3.26n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    10.36n
+Cox1    d2    g2    5p
+
+.ENDS IPT009N08NM6_L0
+
+*****************
+
+.SUBCKT IQE031N08LM6CGSC_L0 drain gate source
+
+Lg     gate   g1   1n
+Ld     drain  d1   250p
+Ls     source s1   100p
+Rs     s1     s2   11u  TC=3m
+
+Rg     g1     g2   0.55
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=538.5  VTO=2.6  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    2.52m  TC=5m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.41n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=2.59n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=14.1p  N=1.08  RS=0.1u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.38m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   1.4n
+.MODEL     DGD    D(M=0.9  CJO=1.4n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    3.6n
+Cox1    d2    g2    20p
+
+.ENDS IQE031N08LM6CGSC_L0
+
+*****************
+
+
+
+.SUBCKT IQE031N08LM6CG_L0 drain gate source
+
+Lg     gate   g1   1n
+Ld     drain  d1   250p
+Ls     source s1   100p
+Rs     s1     s2   11u  TC=3m
+
+Rg     g1     g2   0.55
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=538.5  VTO=2.6  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    2.52m  TC=5m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.41n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=2.59n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=14.1p  N=1.08  RS=0.1u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.38m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   1.4n
+.MODEL     DGD    D(M=0.9  CJO=1.4n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    3.6n
+Cox1    d2    g2    20p
+
+.ENDS IQE031N08LM6CG_L0
+
+*****************
+
+.SUBCKT IQE036N08NM6CGSC_L0 drain gate source
+
+Lg     gate   g1   1n
+Ld     drain  d1   250p
+Ls     source s1   100p
+Rs     s1     s2   11u  TC=3m
+
+Rg     g1     g2   1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=103.6  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.47m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.38n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=2.54n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=13.8p  N=1.08  RS=0.1u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.39m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.65n
+.MODEL     DGD    D(M=0.65  CJO=0.65n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    1.89n
+Cox1    d2    g2    25p
+
+.ENDS IQE036N08NM6CGSC_L0
+
+*****************
+
+.SUBCKT IQE036N08NM6CG_L0 drain gate source
+
+Lg     gate   g1   1n
+Ld     drain  d1   250p
+Ls     source s1   100p
+Rs     s1     s2   11u  TC=3m
+
+Rg     g1     g2   1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=103.6  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.47m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.38n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=2.54n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=13.8p  N=1.08  RS=0.1u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.39m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.65n
+.MODEL     DGD    D(M=0.65  CJO=0.65n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    1.89n
+Cox1    d2    g2    25p
+
+.ENDS IQE036N08NM6CG_L0
+
+*****************
+
+.SUBCKT IQE036N08NM6SC_L0 drain gate source
+
+Lg     gate   g1   1n
+Ld     drain  d1   250p
+Ls     source s1   100p
+Rs     s1     s2   11u  TC=3m
+
+Rg     g1     g2   1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=103.6  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.47m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.38n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=2.54n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=13.8p  N=1.08  RS=0.1u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.39m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.65n
+.MODEL     DGD    D(M=0.65  CJO=0.65n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    1.89n
+Cox1    d2    g2    25p
+
+.ENDS IQE036N08NM6SC_L0
+
+*****************
+
+
+
+.SUBCKT IQE036N08NM6_L0 drain gate source
+
+Lg     gate   g1   1n
+Ld     drain  d1   250p
+Ls     source s1   100p
+Rs     s1     s2   11u  TC=3m
+
+Rg     g1     g2   1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=103.6  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.47m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.38n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=2.54n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=13.8p  N=1.08  RS=0.1u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.39m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.65n
+.MODEL     DGD    D(M=0.65  CJO=0.65n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    1.89n
+Cox1    d2    g2    25p
+
+.ENDS IQE036N08NM6_L0
+
+*****************
+
+.SUBCKT ISC014N08NM6_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   250p
+Rs     s1     s2   158u  TC=3m
+
+Rg     g1     g2   0.8
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=300  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    0.49m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=3.99n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=7.09n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=39.9p  N=1.08  RS=0.03u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.14m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   1.75n
+.MODEL     DGD    D(M=0.65  CJO=1.75n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    5.39n
+Cox1    d2    g2    5p
+
+.ENDS ISC014N08NM6_L0
+
+*****************
+
+.SUBCKT ISC018N08NM6SC_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   250p
+Rs     s1     s2   154u  TC=3m
+
+Rg     g1     g2   0.6
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=236.5  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    0.62m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=3.15n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=5.62n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=31.5p  N=1.08  RS=0.04u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.17m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   1.4n
+.MODEL     DGD    D(M=0.65  CJO=1.4n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    4.26n
+Cox1    d2    g2    5p
+
+.ENDS ISC018N08NM6SC_L0
+
+*****************
+
+.SUBCKT ISC018N08NM6_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   250p
+Rs     s1     s2   154u  TC=3m
+
+Rg     g1     g2   0.6
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=236.5  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    0.62m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=3.15n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=5.62n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=31.5p  N=1.08  RS=0.04u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.17m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   1.4n
+.MODEL     DGD    D(M=0.65  CJO=1.4n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    4.26n
+Cox1    d2    g2    5p
+
+.ENDS ISC018N08NM6_L0
+
+*****************
+
+.SUBCKT ISC031N08NM6SC_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   250p
+Rs     s1     s2   247u  TC=3m
+
+Rg     g1     g2   0.65
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=135.1  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.08m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.8n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=3.28n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=18p  N=1.08  RS=0.08u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.3m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.83n
+.MODEL     DGD    D(M=0.65  CJO=0.83n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    2.45n
+Cox1    d2    g2    5p
+
+.ENDS ISC031N08NM6SC_L0
+
+*****************
+
+
+
+.SUBCKT ISC031N08NM6_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   350p
+Rs     s1     s2   247u  TC=3m
+
+Rg     g1     g2   0.65
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=135.1  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.08m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.8n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=3.28n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=18p  N=1.08  RS=0.08u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.3m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.83n
+.MODEL     DGD    D(M=0.65  CJO=0.83n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    2.45n
+Cox1    d2    g2    5p
+
+.ENDS ISC031N08NM6_L0
+
+*****************
+
+.SUBCKT ISC056N08NM6_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   460p
+Rs     s1     s2   346u  TC=3m
+
+Rg     g1     g2   1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=75.7  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.91m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.01n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=1.88n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=10.1p  N=1.08  RS=0.14u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.54m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.49n
+.MODEL     DGD    D(M=0.65  CJO=0.49n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    1.39n
+Cox1    d2    g2    5p
+
+.ENDS ISC056N08NM6_L0
+
+*****************
+
+.SUBCKT ISC088N08NM6_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   460p
+Rs     s1     s2   321u  TC=3m
+
+Rg     g1     g2   1.05
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=47.2  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    3.06m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=0.63n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=1.21n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=6.3p  N=1.08  RS=0.22u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.86m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.32n
+.MODEL     DGD    D(M=0.65  CJO=0.32n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    0.88n
+Cox1    d2    g2    5p
+
+.ENDS ISC088N08NM6_L0
+
+*****************
+
+.SUBCKT ISC151N08NM6_L0 drain gate source
+
+Lg     gate   g1   2.2n
+Ld     drain  d1   100p
+Ls     source s1   460p
+Rs     s1     s2   290u  TC=3m
+
+Rg     g1     g2   1.1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=27.5  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    5.25m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=0.37n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=0.73n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=3.7p  N=1.08  RS=0.38u  EG=1.12  TT=5n)
+Rdiode  d1  21    1.48m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.2n
+.MODEL     DGD    D(M=0.65  CJO=0.2n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    0.53n
+Cox1    d2    g2    5p
+
+.ENDS ISC151N08NM6_L0
+
+*****************
+
+.SUBCKT ISZ053N08NM6_L0 drain gate source
+
+Lg     gate   g1   1.2n
+Ld     drain  d1   100p
+Ls     source s1   250p
+Rs     s1     s2   232u  TC=3m
+
+Rg     g1     g2   1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=75.7  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    1.92m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=1.01n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=1.88n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=10.1p  N=1.08  RS=0.14u  EG=1.12  TT=5n)
+Rdiode  d1  21    0.54m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.49n
+.MODEL     DGD    D(M=0.65  CJO=0.49n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    1.39n
+Cox1    d2    g2    5p
+
+.ENDS ISZ053N08NM6_L0
+
+*****************
+
+.SUBCKT ISZ157N08NM6_L0 drain gate source
+
+Lg     gate   g1   1.2n
+Ld     drain  d1   100p
+Ls     source s1   300p
+Rs     s1     s2   856u  TC=3m
+
+Rg     g1     g2   1.1
+
+M1     d2     g2    s2    s2    DMOS    L=1u   W=1u
+.MODEL DMOS NMOS ( KP=27.5  VTO=4.4  THETA=0  VMAX=1.5e5  ETA=0.005  LEVEL=3)
+Rd     d1    d2    5.26m  TC=10m
+
+Dbd     s2    d2    Dbt
+.MODEL     Dbt    D(BV=86  M=0.6  CJO=0.37n  VJ=2.5V)
+Rsp     s2    s3     0.1
+Dbd1    s3    d2     Dbt1
+.MODEL     Dbt1    D(BV=1000   M=0.6  CJO=0.73n  VJ=2.5V)
+Dbody   s2   21    DBODY
+.MODEL DBODY  D(IS=3.7p  N=1.08  RS=0.38u  EG=1.12  TT=5n)
+Rdiode  d1  21    1.48m  TC=1m
+
+.MODEL   sw    NMOS(VTO=0  KP=10   LEVEL=1)
+Maux      g2   c    a    a   sw
+Maux2     b    d    g2    g2   sw
+Eaux      c    a    d2    g2   1
+Eaux2     d    g2   d2    g2   -1
+Cox       b    d2   0.2n
+.MODEL     DGD    D(M=0.65  CJO=0.2n  VJ=0.5)
+Rpar      b    d2   1Meg
+Dgd       a    d2   DGD
+Rpar2     d2   a    10Meg
+Cgs     g2    s2    0.53n
+Cox1    d2    g2    5p
+
+.ENDS ISZ157N08NM6_L0
+
+*****************
+
+
+
+
+
+
+

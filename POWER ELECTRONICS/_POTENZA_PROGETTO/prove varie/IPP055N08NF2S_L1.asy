@@ -1,0 +1,17 @@
+Version 4
+SymbolType BLOCK
+RECTANGLE Normal -48 32 -96 -64
+WINDOW 0 8 -40 Bottom 2
+WINDOW 3 78 -14 Top 2
+SYMATTR Value IPP055N08NF2S_L1
+SYMATTR Prefix X
+SYMATTR ModelFile "C:\Users\stefa\Desktop\potenza\IPP055N08NF.lib"
+PIN -48 -64 RIGHT 8
+PINATTR PinName D
+PINATTR SpiceOrder 1
+PIN -96 16 LEFT 8
+PINATTR PinName G
+PINATTR SpiceOrder 2
+PIN -48 32 RIGHT 8
+PINATTR PinName S
+PINATTR SpiceOrder 3

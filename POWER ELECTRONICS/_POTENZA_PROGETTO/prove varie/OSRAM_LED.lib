@@ -1,0 +1,4 @@
+.subckt OSRAM_LED  A  K
+D  A K  Rectifier
+.model Rectifier D(Is=1e-20 N=1.7 Rs=0.5 Cjo=50p)
+.ends

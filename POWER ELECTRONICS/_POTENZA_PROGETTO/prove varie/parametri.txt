@@ -1,0 +1,45 @@
+.param fs 200k
+.param Ts =1/fs
+.param Duty 0.2
+.param Ton1 Duty*Ts
+.param Ton2 Ts-Ton1
+PULSE(0 40 {Ton1} 1n 1n {Ton2} {Ts})
+PULSE(0 40 0 1n 1n {Ton1} {Ts})
+
+.model Do1 D(
++ Is=1.0e-5     ; saturazione di corrente (A) - scelta per adattare Vf@If
++ N=1.05        ; fattore ideale (tipico per Schottky ~1.0-1.2)
++ Rs=0.10       ; resistenza serie (Ω) - regola la pendenza Vf vs If
++ Cjo=3.8e-10   ; giunzione capacitance @ V=0 (F) = 380 pF
++ M=0.33        ; coefficiente di Cj (tipico)
++ Vj=0.4        ; built-in potential (V)
++ Eg=0.69       ; bandgap (eV) - usato da alcuni SPICE per temperatura
++ Bv=80         ; breakdown voltage (V)
++ Ibv=1e-3      ; corrente di breakdown (A)
++ TT=1e-9       ; tempo di transit (s) (Schottky molto veloce)
++)
+
+
+.model S1 NMOS(
++ Vto=2.5         ; soglia tipica (V)
++ Rd=0.008        ; Rds(on) tipico (ohm)
++ Rg=2            ; resistenza gate
++ Kp=150          ; transconductance factor (A/V^2) - scelto per corrente nominale
++ Lambda=0.02     ; effetto canale corto
++ Cgd=8.5e-9      ; carica gate-drain (Crss)
++ Cgs=4.8e-9      ; carica gate-source (Ciss-Crss)
++ Cds=1.5e-9      ; capacità drain-source
++ Pb=0.8
++ Is=1e-12
++ N=1.3
++)
+
+
+.model LED1 D(Is=1e-20 N=2 Rs=2.4 Eg=2.7 Cjo=1e-10 M=0.5 Bv=6 Ibv=1e-3)
+
+.model Do1 D(Is=1.0e-5 N=1.05 Rs=0.10 Cjo=3.8e-10 M=0.33 Vj=0.4 Eg=0.69 Bv=80 Ibv=1e-3 TT=1e-9)
+
+.model S1 NMOS(Vto=2.5 Rd=0.008 Rg=2 Kp=150 Lambda=0.02 Cgd=8.5e-9 Cgs=4.8e-9 Cds=1.5e-9 Pb=0.8 Is=1e-12 N=1.3)
+
+
+

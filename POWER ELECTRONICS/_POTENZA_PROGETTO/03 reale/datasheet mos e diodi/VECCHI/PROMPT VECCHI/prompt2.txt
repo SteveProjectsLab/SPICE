@@ -1,0 +1,104 @@
+Chiaro 👍
+Il componente che citi — **SB580 + IRFB3507** — in realtà combina **due dispositivi distinti**:
+
+* 🟡 **SB580** → diodo Schottky 5 A / 80 V (tipico per raddrizzamento veloce)
+* 🟢 **IRFB3507** → MOSFET di potenza N-channel (60 V, bassa Rds(on)) della Infineon/IR
+
+👉 Non esiste un “modello SPICE unico” che li rappresenti insieme, a meno che tu non voglia **creare un sottocircuito** (`.subckt`) che includa **un diodo + un MOSFET** nello stesso pacchetto.
+Posso fornirti entrambi i modelli separati (diodo e MOSFET), oppure creare un singolo blocco `.subckt` per usarli insieme (es. per simulare uno stadio sincrono di alimentatore switching).
+
+---
+
+## 🔸 1️⃣ Modello SPICE — **SB580** (diodo Schottky)
+
+```spice
+* SB580 - modello SPICE approssimato (Schottky 5A 80V)
+.model SB580 D(
++ Is=1e-5     ; corrente di saturazione
++ N=1.05
++ Rs=0.10
++ Cjo=3.8e-10
++ M=0.33
++ Vj=0.4
++ Eg=0.69
++ Bv=80
++ Ibv=1e-3
++ TT=1e-9
+)
+```
+
+---
+
+## 🔸 2️⃣ Modello SPICE — **IRFB3507** (MOSFET N-channel 60 V, 35 A, Rds(on) ≈ 8 mΩ)
+
+Il datasheet della IRFB3507 fornisce parametri elettrici ma **non sempre un modello SPICE ufficiale**. Tuttavia, si può creare un modello realistico usando i parametri principali: Vth, Rds(on), Qgs, Qgd, Ciss/Coss/Crss ecc.
+
+Ecco un modello **semplificato ma compatibile con LTspice / PSpice**:
+
+```spice
+* IRFB3507 - modello MOSFET N-channel approssimato
+.model IRFB3507 NMOS(
++ Vto=2.5         ; soglia tipica (V)
++ Rd=0.008        ; Rds(on) tipico (ohm)
++ Rg=2            ; resistenza gate
++ Kp=150          ; transconductance factor (A/V^2) - scelto per corrente nominale
++ Lambda=0.02     ; effetto canale corto
++ Cgd=8.5e-9      ; carica gate-drain (Crss)
++ Cgs=4.8e-9      ; carica gate-source (Ciss-Crss)
++ Cds=1.5e-9      ; capacità drain-source
++ Pb=0.8
++ Is=1e-12
++ N=1.3
+)
+```
+
+*(Valori capacitivi derivati da Ciss ≈ 13 nF, Crss ≈ 8.5 nF, Coss ≈ 10 nF tipici a Vds=25 V)*
+
+---
+
+## 🔸 3️⃣ Modello combinato `.subckt` — Diodo + MOSFET
+
+Se vuoi simulare ad esempio un rettificatore sincrono o un circuito in cui il diodo è in antiparallelo al MOSFET (tipico in alimentatori switching), puoi usare un sottocircuito:
+
+```spice
+* Subcircuito combinato: IRFB3507 + SB580
+* Pinout: 1=Drain, 2=Gate, 3=Source
+.subckt SB580_IRFB3507 D G S
+
+* MOSFET
+M1 D G S S IRFB3507
+
+* Diodo Schottky (anodo=S, catodo=D)
+D1 S D SB580
+
+.ends SB580_IRFB3507
+```
+
+### ➕ Uso nel circuito
+
+```spice
+* Esempio
+X1 Drain Gate Source SB580_IRFB3507
+Vgs Gate Source PULSE(0 10 0 10n 10n 100n 200n)
+Vds Drain Source 12
+```
+
+---
+
+## 📌 In sintesi
+
+| Componente   | Tipo           | Modello fornito              |
+| ------------ | -------------- | ---------------------------- |
+| SB580        | Diodo Schottky | `.model SB580 D(...)`        |
+| IRFB3507     | N-MOSFET       | `.model IRFB3507 NMOS(...)`  |
+| Combinazione | Subcircuito    | `.subckt SB580_IRFB3507 ...` |
+
+---
+
+Posso fornirti:
+
+* ✅ File `.lib` pronto da includere in LTspice
+* ✅ File `.asy` (simbolo grafico personalizzato) per LTspice
+* ✅ Versione più precisa del MOSFET usando il **modello ufficiale IR** se vuoi che lo cerchi online.
+
+👉 Vuoi che ti generi il **file `.lib`** con tutto questo già pronto da importare in LTspice? (📄 `SB580_IRFB3507.lib`)

@@ -1,0 +1,32 @@
+Version 4
+SymbolType BLOCK
+LINE Normal 16 0 -16 0
+LINE Normal 0 32 16 0
+LINE Normal 0 32 -16 0
+LINE Normal -16 32 0 32
+LINE Normal 16 32 -16 32
+LINE Normal 0 -32 0 0
+LINE Normal 0 80 0 32
+LINE Normal 16 112 -16 112
+LINE Normal 0 144 16 112
+LINE Normal 0 144 -16 112
+LINE Normal -16 144 0 144
+LINE Normal 16 144 -16 144
+LINE Normal 0 80 0 112
+LINE Normal 0 192 0 144
+LINE Normal 16 304 -16 304
+LINE Normal 0 336 16 304
+LINE Normal 0 336 -16 304
+LINE Normal -16 336 0 336
+LINE Normal 16 336 -16 336
+LINE Normal 0 272 0 304
+LINE Normal 0 384 0 336
+LINE Normal 0 224 0 208
+LINE Normal 0 256 0 239
+SYMATTR ModelFile "G:\Il mio Drive\00 UNIBS\MAGISTRALE\ANNO 2 - 2° semestre\ELETTRONICA DI POTENZA\_progetto_mio\DATASHEET\led osram\led_strip.lib"
+PIN 0 -32 LEFT 8
+PINATTR PinName A
+PINATTR SpiceOrder 1
+PIN 0 384 LEFT 8
+PINATTR PinName K
+PINATTR SpiceOrder 2

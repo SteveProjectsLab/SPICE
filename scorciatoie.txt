@@ -21,10 +21,10 @@ DIRETTIVE
 .dc dec | sorgente | valore_iniz | valore_fin | pti per decade  ->  DC sweep logaritmico DECADI
 .dc oct | sorgente | valore_iniz | valore_fin | pti per ottava  ->  DC sweep logaritmico OTTAVE
 .dc list | sorgente | val1 | val2 | val3 ...    DC sweep LISTA VALORI
-
+.ic V(nodo) = valore    ->    condizione inizialec
 .backanno   direttiva per annotare i risutati sullo schema
 ALT + SX    sonda di potenza
-
+.uic    -> use initial conditions
 -------------------------------------------------------
 OPERAZIONI
 -------------------------------------------------------

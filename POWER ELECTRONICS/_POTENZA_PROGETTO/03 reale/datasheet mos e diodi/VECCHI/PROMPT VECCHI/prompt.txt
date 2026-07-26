@@ -1,0 +1,57 @@
+Perfetto — ecco un modello SPICE **approssimato** per il diodo Schottky **SB580** (80 V, 5 A) basato sui valori tipici presenti nei datasheet (If = 5 A, Vr = 80 V, Vf ≈ 0.8–0.85 V @ 5 A, Ir ≈ 500 µA @ 80 V, Cj ≈ 380 pF @ 4 V). Le specifiche di riferimento sono prese dai datasheet/fornitori. ([Mouser Electronics][1])
+
+> Nota: i produttori raramente pubblicano tutti i parametri SPICE (Is, Rs, n, ecc.), quindi ho scelto valori realistici e conservativi per Is/Rs/tt/Cjo in modo che il modello riproduca il Vf @ 5 A e la capacità/ perdita inversa grossolanamente come il componente reale. Se hai misure (es. curva Vf vs If) posso affinarlo ulteriormente.
+
+# Modello SPICE (blocco `.model`) — pronto per LTspice / SPICE generico
+
+```
+* SB580 - modello SPICE approssimato (Schottky)
+* Parametri presi/derivati da datasheet: Vr=80V, If=5A, Vf≈0.85V@5A, Ir≈500uA, Cj≈380pF.
+.model SB580 D(
++ Is=1.0e-5     ; saturazione di corrente (A) - scelta per adattare Vf@If
++ N=1.05        ; fattore ideale (tipico per Schottky ~1.0-1.2)
++ Rs=0.10       ; resistenza serie (Ω) - regola la pendenza Vf vs If
++ Cjo=3.8e-10   ; giunzione capacitance @ V=0 (F) = 380 pF
++ M=0.33        ; coefficiente di Cj (tipico)
++ Vj=0.4        ; built-in potential (V)
++ Eg=0.69       ; bandgap (eV) - usato da alcuni SPICE per temperatura
++ Bv=80         ; breakdown voltage (V)
++ Ibv=1e-3      ; corrente di breakdown (A)
++ TT=1e-9       ; tempo di transit (s) (Schottky molto veloce)
+)
+```
+
+# Come usarlo (esempio LTspice)
+
+```
+* Esempio semplice
+V1 Vin 0 PULSE(0 10 0 1u 1u 1m 2m)
+Rload Vin N1 10
+X1 N1 0 SB580
+.model SB580 D( ... )   ; incolla il modello qui (vedi sopra)
+```
+
+Oppure semplicemente:
+
+```
+D1 anodo catodo SB580
+.model SB580 D( ... )
+```
+
+# Spiegazione rapida dei parametri chiave
+
+* **Is (1e-5 A)** — scelto per ottenere una caduta diretta (Vf) coerente con 0.8–0.85 V a 5 A quando consideriamo anche Rs. Valore relativamente alto è compatibile con leakage Schottky.
+* **Rs (0.10 Ω)** — determina la componente lineare di Vf = If·Rs; regolalo se vuoi che il Vf misurato a 5 A sia più o meno alto.
+* **Cjo = 3.8e-10 F (380 pF)** — valore ricavato dal datasheet a 4 V. ([DigiKey][2])
+* **Bv = 80 V, Ibv = 1e-3 A** — riflette la tensione di blocco e la corrente di breakdown nominale. ([futurlec.com][3])
+
+# Se vuoi maggiore accuratezza
+
+* Posso adattare Is e Rs per far combaciare esattamente la curva **Vf vs If** se mi fornisci una coppia di punti (es. Vf@1A, Vf@5A) — converto i parametri con un fit semplice.
+* Posso anche fornire una versione `.subckt` o un file `.asy`/`.lib` pronto per LTspice se preferisci.
+
+Dimmi se ti va bene questo modello così com’è o se vuoi che lo adatti (ad es. priorità su accuratezza Vf, o su comportamento a bassa corrente, o su risposta a commutazione).
+
+[1]: https://www.mouser.com/ProductDetail/onsemi-Fairchild/SB580?qs=mVVXn4M53U%252BQd5ox2tbeeg%3D%3D&srsltid=AfmBOor_rWbKNuIl8coXqZsmYJIMbKoUX2z2xYPAahdR2U3hx2Hn-nxF&utm_source=chatgpt.com "SB580 onsemi / Fairchild - Diodes & Rectifiers"
+[2]: https://www.digikey.in/en/products/detail/rochester-electronics-llc/SB580/13444924?utm_source=chatgpt.com "SB580 - Discrete Semiconductor Products"
+[3]: https://www.futurlec.com/Diodes/SB580pr.shtml?utm_source=chatgpt.com "SB580 80V 5A Schottky Barrier Diode"

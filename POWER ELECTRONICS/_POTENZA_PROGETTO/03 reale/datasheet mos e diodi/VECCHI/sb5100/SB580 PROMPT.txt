@@ -1,0 +1,73 @@
+Here is how you can make an **LTspice model / subcircuit** for **SB580** (Schottky diode) — and a starter template you can tweak. But first, some specs to base it on.
+
+---
+
+## 📄 SB580 — Key Datasheet Specs
+
+From various sources:
+
+* It is a Schottky barrier rectifier, 80 V, 5 A. ([onsemi][1])
+* Maximum forward voltage: ~0.85 V at 5 A ([futurlec.com][2])
+* Reverse current (I_R): up to ~0.5 mA at rated reverse voltage ([futurlec.com][2])
+* Junction capacitance (C_j): ~380 pF @ 4 V reverse bias, 1 MHz measurement ([DigiKey][3])
+
+These give you rough anchors for model parameters (saturation current, ideality, junction capacitance, series resistance, etc.).
+
+---
+
+## 🛠 LTspice Subcircuit Template
+
+Below is a starting SPICE / LTspice subcircuit for SB580. You will need to tweak parameters (especially `Is`, `Rs`, `Cjo`, `M`, etc.) to better match actual datasheet curves.
+
+```spice
+****************************************************************
+* SB580 — Schottky diode approximate SPICE model for LTspice
+* Based on typical specs: 80 V, 5 A, Vf ~0.85 V, Cj ~380 pF, etc.
+****************************************************************
+
+* Subcircuit: D — anode, cathode
+.subckt SB580 A K
+*
+* Diode with series resistance and junction capacitance
+*
+* D1 is the intrinsic diode
+D1 A K Dmod
+Rdmod K Dmod  ; series resistance (parasitic resistance)
+*
+* Junction capacitance (reverse: depletion) from node Dmod to K
+Cj Dmod K CJO * (1 + Vd/Vj)^(-M)
+*
+* You could also add leakage paths, etc.
+*
+.model Dmod D (Is=1e-4 Rs=0.05 N=1.2 Bv=80 Ibv=1e-3 Cjo=380e-12 M=0.33 Eg=0.69)
+*
+.ends SB580
+
+*******************************************************
+* Usage example in netlist:
+* X1 anode cathode SB580
+* .include this_model_file
+*******************************************************
+```
+
+---
+
+## 🔍 Explanation & Tuning Suggestions
+
+* `Is` (reverse saturation current) — for a Schottky, this may be relatively high compared to normal diode. Start with something like `1e-4 A` and adjust.
+* `Rs` — series resistance to model the voltage drop at high current. Try something modest (e.g. 0.05 Ω) and tune.
+* `N` (ideality / emission coefficient) — e.g. 1.1 to 2.0 depending on curve shape.
+* `Bv`, `Ibv` — breakdown voltage and reverse current at breakdown. Use ~80 V for Bv. `Ibv` small leakage current.
+* `Cjo` — junction capacitance (zero-bias). Use ~380 pF (datasheet) for Cjo. ([DigiKey][3])
+* `M` — grading coefficient (between 0.3 and 0.5) for depletion capacitance.
+* `Eg` — energy bandgap parameter (often ~0.7 eV) helps to model temperature / voltage dependence.
+
+You will iterate: simulate forward I–V and reverse leakage in LTspice, compare curves to datasheet, adjust parameters until reasonably matching.
+
+---
+
+If you like, I can prepare a more polished `.sub` file for **SB580** with tuned parameters (based on datasheet curves) for you to drop into LTspice. Would you like me to send that?
+
+[1]: https://www.onsemi.com/products/discrete-power-modules/schottky-diodes-schottky-rectifiers/sb580?utm_source=chatgpt.com "SB580"
+[2]: https://www.futurlec.com/Diodes/SB580pr.shtml?utm_source=chatgpt.com "SB580 80V 5A Schottky Barrier Diode"
+[3]: https://www.digikey.gr/en/products/detail/rochester-electronics-llc/SB580/13444924?utm_source=chatgpt.com "SB580 - Discrete Semiconductor Products"

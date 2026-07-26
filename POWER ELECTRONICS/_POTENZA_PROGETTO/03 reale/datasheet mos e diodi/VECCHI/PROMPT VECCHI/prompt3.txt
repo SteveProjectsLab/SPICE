@@ -1,0 +1,98 @@
+Perfetto 👌
+Vuoi usare una **OSRAM HB-LED** da circa **3.3 V / 500 mA** in LTspice — ottima scelta per simulare driver LED.
+Posso fornirti un **modello SPICE semplice** e realistico per questo tipo di LED.
+
+---
+
+## 📌 Specifiche tipiche OSRAM HB-LED (es. OSLON / Golden Dragon)
+
+| Parametro             | Valore tipico                                                                 |
+| --------------------- | ----------------------------------------------------------------------------- |
+| Tensione diretta Vf   | 3.2 – 3.4 V @ 500 mA                                                          |
+| Corrente nominale If  | 500 mA                                                                        |
+| Corrente max          | 700 mA (tipica)                                                               |
+| Tempo di commutazione | molto rapido (LED = dispositivo quasi puramente resistivo + capacità piccola) |
+| Capacità giunzione    | 50 – 200 pF tipica                                                            |
+
+---
+
+## ✅ Modello SPICE per LED HB OSRAM 3.3 V / 0.5 A
+
+### 🔸 1) **Modello Diodo LED** (semplice)
+
+Puoi modellare il LED come un **diodo con Is, N e Rs** scelti per riprodurre ~3.3 V @ 500 mA:
+
+```spice
+* Modello HB-LED OSRAM 3.3V @ 0.5A
+.model OSRAM_HBLED D(
++ Is=1e-20
++ N=2
++ Rs=2.4
++ Eg=2.7
++ Cjo=1e-10
++ M=0.5
++ Bv=6
++ Ibv=1e-3
+)
+```
+
+👉 **Spiegazione**:
+
+* `Is=1e-20`, `N=2` → imposta la curva esponenziale per tensione tipica LED blu/bianco
+* `Rs=2.4 Ω` → regola la caduta @ 500 mA → 0.5 A × 2.4 Ω ≈ 1.2 V + tensione di giunzione ≈ 3.3 V
+* `Eg=2.7` → bandgap LED blu
+* `Cjo=1e-10` (100 pF) → capacità giunzione tipica
+* `Bv=6 V` → tensione inversa LED (valore indicativo)
+
+---
+
+### 🔸 2) **Esempio d’uso in LTspice**
+
+```spice
+* Alimentatore 5V con resistenza limitatrice e LED OSRAM
+V1 IN 0 5
+R1 IN N1 3.4
+D1 N1 0 OSRAM_HBLED
+
+.model OSRAM_HBLED D(Is=1e-20 N=2 Rs=2.4 Eg=2.7 Cjo=1e-10 M=0.5 Bv=6 Ibv=1e-3)
+
+.tran 1m
+.backanno
+.end
+```
+
+👉 Qui il LED condurrà circa 0.5 A a regime, con caduta intorno a 3.3 V, come nella realtà.
+
+---
+
+### 🔸 3) **Modello dinamico opzionale (subckt)**
+
+Se vuoi aggiungere **capacità e tempo di accensione**, puoi usare un subcircuito LED:
+
+```spice
+.subckt OSRAM_HBLED P N
+D1 P N OSRAM_HBLED_CORE
+C1 P N 100p
+.ends OSRAM_HBLED
+
+.model OSRAM_HBLED_CORE D(Is=1e-20 N=2 Rs=2.4 Eg=2.7 Bv=6 Ibv=1e-3)
+```
+
+E poi usarlo così:
+
+```spice
+XLED IN 0 OSRAM_HBLED
+```
+
+---
+
+## 📌 Suggerimenti per l’uso in driver LED
+
+* In simulazioni **buck / boost driver LED**, è meglio usare **il modello subckt con C1**, perché migliora la convergenza e rappresenta la capacità parassita reale.
+* Se usi un **controllo in corrente**, il LED può anche essere modellato semplicemente come **resistenza dinamica + tensione di soglia** (per simulazioni di efficienza).
+* Se hai il codice prodotto OSRAM specifico, posso fornirti parametri più accurati da datasheet.
+
+---
+
+Vuoi che ti generi un file `.lib` LTspice con **OSRAM_HBLED** già pronto da includere con `.include`?
+(opzione ideale se stai costruendo uno schema di driver switching)
