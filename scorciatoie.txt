@@ -12,6 +12,13 @@ C           condensatore
 
 * o ;       commento
 -------------------------------------------------------
+simulazioni
+-------------------------------------------------------
+.op -> DC operating point
+.tran | tempo_finale -> transitorio
+.tran | tempo_stampa | tempo_finale [tempo_inizio [passo_massimo]] [opzioni]    -> transitorio direttiva completa
+
+-------------------------------------------------------
 DIRETTIVE
 -------------------------------------------------------
 
@@ -25,6 +32,10 @@ DIRETTIVE
 .backanno   direttiva per annotare i risutati sullo schema
 ALT + SX    sonda di potenza
 .uic    -> use initial conditions
+Ctrl + Click su label traccia -> integrale
+
+.step param X list val1 val2 val3
+SINE(0 1 1k) AC 1 0
 -------------------------------------------------------
 OPERAZIONI
 -------------------------------------------------------
