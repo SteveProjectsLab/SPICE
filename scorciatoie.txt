@@ -1,1 +1,43 @@
+NB passa il cursore sulle icone della barra degli strumenti per visualizzare la scorciatoia
+
+F5          esegui simulazione
+
 Ctrl + N    nuovo schema elettrico
+Ctrl + S    salva
+Ctrl + O    apri file
+R           resistore
+L           induttore
+C           condensatore
+
+
+* o ;       commento
+-------------------------------------------------------
+DIRETTIVE
+-------------------------------------------------------
+
+.op     punto operativo DC    ->    insieme di tute le tens ai nodi e le correnti nei rami di un circuito quando alimentato in DC e condizioni stazionarie
+.dc | sorgente | valore_iniz | valore_fin |incremento    -> DC sweep LINEARE
+.dc | sorgente1 | valore_iniz1 | valore_fin1 | sorgente2 | valore_iniz2 | valore_fin2 |  incremento ->    DC sweep LINEARE NESTED
+.dc dec | sorgente | valore_iniz | valore_fin | pti per decade  ->  DC sweep logaritmico DECADI
+.dc oct | sorgente | valore_iniz | valore_fin | pti per ottava  ->  DC sweep logaritmico OTTAVE
+.dc list | sorgente | val1 | val2 | val3 ...    DC sweep LISTA VALORI
+
+.backanno   direttiva per annotare i risutati sullo schema
+ALT + SX    sonda di potenza
+
+-------------------------------------------------------
+OPERAZIONI
+-------------------------------------------------------
+
+abs()
+sqrt()
+log()
+log10()
+sin()
+cos()
+
+-------------------------------------------------------
+TIPI DI FILE
+-------------------------------------------------------
+.asc    schematico
+.raw
